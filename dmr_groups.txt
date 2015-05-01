@@ -1,0 +1,22 @@
+"map_groups"
+{
+    "low_population"
+    {
+        "koth_viaduct" {}
+        "plr_hightower" {}
+        "ctf_2fort" {}
+    }
+
+    "high_population"
+    {
+        "pl_badwater" {}
+        "cp_dustbowl" {}
+        "pl_upward" {}
+    }
+
+    "suprise_chip"
+    {
+        "the_race" {}
+    }
+
+}
