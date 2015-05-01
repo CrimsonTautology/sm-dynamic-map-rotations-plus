@@ -100,17 +100,24 @@ LoadDMRFile(String:file[], String:map_key[], &Handle:rotation, &Handle:map_group
 
     if(!FileToKeyValues(map_groups, file))
     {
-        LogError("[DMR+] Could not read map rotation file \"%s\"", file);
-        SetFailState("Could not read map rotation file \"%s\"", file);
+        LogError("[DMR+] Could not read map groups file \"%s\"", file);
+        SetFailState("Could not read map groups file \"%s\"", file);
         return;
     }
-
 
     //Read the default "start" key if map_key cvar is not set or invalid
     if(!strlen(map_key) || !KvJumpToKey(rotation, map_key))
     {
         KvGetString(rotation, "start", val, sizeof(val));
-        SetConVarString(g_Cvar_MapKey, val);
+
+        if(KvJumpToKey(rotation, val))
+        {
+            LogMessage("[DMR+] Reset dmr_map_key to \"%s\"", val);
+            SetConVarString(g_Cvar_MapKey, val);
+        }else{
+            LogError("[DMR+] A valid \"start\" key was not defined in \"%s\"", file);
+            SetFailState("A valid \"start\" key was not defined in \"%s\"", file);
+        }
     }
 
     KvRewind(rotation);
