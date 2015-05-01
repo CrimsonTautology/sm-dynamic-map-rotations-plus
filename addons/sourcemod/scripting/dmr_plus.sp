@@ -27,6 +27,7 @@ public Plugin:myinfo =
 };
 
 #define MAX_KEY_LENGTH	    32
+#define MAX_VAL_LENGTH	    32
 
 new Handle:g_Cvar_File = INVALID_HANDLE;
 new Handle:g_Cvar_MapKey = INVALID_HANDLE;
@@ -48,7 +49,7 @@ public OnPluginStart()
 
     g_Cvar_MapKey = CreateConVar(
             "dmr_map_key",
-            "start",
+            "",
             "The key used to base nextmap decisions on",
             FCVAR_PLUGIN);
 
@@ -71,18 +72,24 @@ public OnPluginStart()
 
 public OnMapStart()
 {
-    decl String:file[PLATFORM_MAX_PATH];
+    decl String:file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
+    GetConVarString(g_Cvar_MapKey, map_key, sizeof(map_key));
 
-    LoadDMRFile(file, g_Rotation, g_MapGroups);
+    LoadDMRFile(file, map_key, g_Rotation, g_MapGroups);
 }
 
-LoadDMRFile(String:file[], &Handle:rotation, &Handle:map_groups)
+LoadDMRFile(String:file[], String:map_key[], &Handle:rotation, &Handle:map_groups)
 {
 
     //Find the dmr config file for the current game, if one exists
-    decl String:path[PLATFORM_MAX_PATH];
+    decl String:path[PLATFORM_MAX_PATH], String:val[MAX_VAL_LENGTH];
     BuildPath(Path_SM, path, sizeof(path), file);
+    if(rotation != INVALID_HANDLE) CloseHandle(rotation);
+    if(map_groups != INVALID_HANDLE) CloseHandle(map_groups);
+
+    rotation = CreateKeyValues("rotation");
+    map_groups = CreateKeyValues("map_groups");
 
     if(!FileToKeyValues(rotation, file))
     {
@@ -91,11 +98,22 @@ LoadDMRFile(String:file[], &Handle:rotation, &Handle:map_groups)
         return;
     }
 
-    if(rotation != INVALID_HANDLE) CloseHandle(rotation);
-    if(map_groups != INVALID_HANDLE) CloseHandle(map_groups);
+    if(!FileToKeyValues(map_groups, file))
+    {
+        LogError("[DMR+] Could not read map rotation file \"%s\"", file);
+        SetFailState("Could not read map rotation file \"%s\"", file);
+        return;
+    }
 
-    rotation = CreateKeyValues("rotation");
-    map_groups = CreateKeyValues("map_groups");
+
+    //Read the default "start" key if map_key cvar is not set or invalid
+    if(!strlen(map_key) || !KvJumpToKey(rotation, map_key))
+    {
+        KvGetString(rotation, "start", val, sizeof(val));
+        SetConVarString(g_Cvar_MapKey, val);
+    }
+
+    KvRewind(rotation);
 }
 
 bool:GetMapFromKey(const String:map_key[], Handle:rotation, String:map[], length)
@@ -110,8 +128,8 @@ bool:GetMapFromKey(const String:map_key[], Handle:rotation, String:map[], length
         //Throw error if map is not valid
         if(!IsMapValid(map))
         {
-            LogError("[DMR+] map \"%s\" in key \"%s\" is invalid.", map, key);
-            SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, key);
+            LogError("[DMR+] map \"%s\" in key \"%s\" is invalid.", map, map_key);
+            SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, map_key);
         }
 
         KvRewind(rotation);
@@ -119,12 +137,25 @@ bool:GetMapFromKey(const String:map_key[], Handle:rotation, String:map[], length
     }
 
     KvRewind(rotation);
-    return false
+    return false;
 }
 
 bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:next_map_key[], length)
 {
+    if(rotation == INVALID_HANDLE) return false;
 
+    KvRewind(rotation);
+
+    if(KvJumpToKey(rotation, map_key))
+    {
+        KvGetString(rotation, "default_nextmap", next_map_key, length);
+
+        KvRewind(rotation);
+        return true;
+    }
+
+    KvRewind(rotation);
+    LogError("[DMR+] map_key \"%s\" was not found.", map_key);
     return false;
 }
 
@@ -138,9 +169,14 @@ bool:GetRandomMapFromGroup(const String:map_group[], Handle:map_groups, String:m
 public Action:Command_DMR(client, args)
 {
     //TODO
-    decl String:file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH];
+    decl String:file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH], String:next_map_key[PLATFORM_MAX_PATH], String:next_map[PLATFORM_MAX_PATH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_MapKey, map_key, sizeof(map_key));
+
+    GetMapFromKey(map_key, g_Rotation, next_map, sizeof(next_map));
+    GetNextMapKey(map_key, g_Rotation, next_map_key, sizeof(next_map_key));
+    PrintToConsole(0, "next_map: %s\nnext_map_key: %s", next_map, next_map_key);
+    SetConVarString(g_Cvar_MapKey, next_map_key);
 
     if(client)
     {
