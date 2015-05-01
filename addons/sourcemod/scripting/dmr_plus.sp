@@ -99,7 +99,7 @@ LoadDMRFile(String:file[], String:map_key[], &Handle:rotation)
 
     if(!FileToKeyValues(rotation, file))
     {
-        LogError("[DMR+] Could not read map rotation file \"%s\"", file);
+        LogError("Could not read map rotation file \"%s\"", file);
         SetFailState("Could not read map rotation file \"%s\"", file);
         return;
     }
@@ -111,10 +111,10 @@ LoadDMRFile(String:file[], String:map_key[], &Handle:rotation)
 
         if(KvJumpToKey(rotation, val))
         {
-            LogMessage("[DMR+] Reset dmr_map_key to \"%s\"", val);
+            LogMessage("Reset dmr_map_key to \"%s\"", val);
             SetConVarString(g_Cvar_MapKey, val);
         }else{
-            LogError("[DMR+] A valid \"start\" key was not defined in \"%s\"", file);
+            LogError("A valid \"start\" key was not defined in \"%s\"", file);
             SetFailState("A valid \"start\" key was not defined in \"%s\"", file);
         }
     }
@@ -133,7 +133,7 @@ LoadDMRGroupsFile(const String:file[], &Handle:map_groups)
 
     if(!FileToKeyValues(map_groups, file))
     {
-        LogError("[DMR+] Could not read map groups file \"%s\"", file);
+        LogError("Could not read map groups file \"%s\"", file);
         SetFailState("Could not read map groups file \"%s\"", file);
         return;
     }
@@ -141,21 +141,58 @@ LoadDMRGroupsFile(const String:file[], &Handle:map_groups)
     KvRewind(map_groups);
 }
 
-bool:GetMapFromKey(const String:map_key[], Handle:rotation, String:map[], length)
+bool:GetMapFromKey(const String:map_key[], Handle:rotation, Handle:map_groups, String:map[], length)
+{
+    if(rotation == INVALID_HANDLE) return false;
+    if(map_groups == INVALID_HANDLE) return false;
+
+    decl String:group[PLATFORM_MAX_PATH];
+
+    KvRewind(rotation);
+    if(KvJumpToKey(rotation, map_key))
+    {
+        if(KvGetString(rotation, "map", map, length, "") && strlen(map) > 0)
+        {
+            //First check for "map" key
+            //Throw error if map is not valid
+            if(!IsMapValid(map))
+            {
+                LogError("map \"%s\" in key \"%s\" is invalid.", map, map_key);
+                SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, map_key);
+            }
+
+            KvRewind(rotation);
+            return true;
+
+        }else if(KvGetString(rotation, "group", group, length, "") && strlen(group) > 0)
+        {
+            //Then check for "group" key
+            //Throw error if group is not valid
+            if(!GetRandomMapFromGroup(group, map_groups, map, length))
+            {
+                LogError("group \"%s\" in key \"%s\" is invalid.", group, map_key);
+                SetFailState("Group \"%s\" in key \"%s\" is invalid.", group, map_key);
+            }
+
+
+            KvRewind(rotation);
+            return true;
+        }
+
+    }
+
+    KvRewind(rotation);
+    return false;
+}
+
+bool:GetGroupFromKey(const String:map_key[], Handle:rotation, String:group[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
     KvRewind(rotation);
     if(KvJumpToKey(rotation, map_key))
     {
-        KvGetString(rotation, "map", map, length);
-
-        //Throw error if map is not valid
-        if(!IsMapValid(map))
-        {
-            LogError("[DMR+] map \"%s\" in key \"%s\" is invalid.", map, map_key);
-            SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, map_key);
-        }
+        KvGetString(rotation, "group", group, length);
 
         KvRewind(rotation);
         return true;
@@ -180,7 +217,7 @@ bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:next_map_key[
     }
 
     KvRewind(rotation);
-    LogError("[DMR+] map_key \"%s\" was not found.", map_key);
+    LogError("map_key \"%s\" was not found.", map_key);
     return false;
 }
 
@@ -192,30 +229,26 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
     KvRewind(map_groups);
 
     KvGetSectionName(map_groups, map, length);
-    PrintToConsole(0, "section: %s", map);//TODO
 
     if(KvJumpToKey(map_groups, group))
     {
-        PrintToConsole(0, "group: %s", group);//TODO
         KvGotoFirstSubKey(map_groups);
 
-        do{
+        //Use reservoir sampling to get random map from group
+        do
+        {
             count +=1;
 
-            //Use reservoir sampling to get random map from group
-            if(count == 1)
-            {
+            if(count == 1) {
                 KvGetSectionName(map_groups, map, length);
             }else{
                 rand = GetRandomInt(0, count - 1);
 
-                if(rand == count - 1)
-                {
+                if(rand == count - 1) {
                     KvGetSectionName(map_groups, map, length);
                 }
             }
 
-            PrintToConsole(0, "map: %s", map);//TODO
         } while(KvGotoNextKey(map_groups));
 
         KvRewind(map_groups);
@@ -233,7 +266,7 @@ public Action:Command_DMR(client, args)
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_MapKey, map_key, sizeof(map_key));
 
-    GetMapFromKey(map_key, g_Rotation, next_map, sizeof(next_map));
+    GetMapFromKey(map_key, g_Rotation, g_MapGroups, next_map, sizeof(next_map));
     GetNextMapKey(map_key, g_Rotation, next_map_key, sizeof(next_map_key));
     PrintToConsole(0, "next_map: %s\nnext_map_key: %s", next_map, next_map_key);
     SetConVarString(g_Cvar_MapKey, next_map_key);
