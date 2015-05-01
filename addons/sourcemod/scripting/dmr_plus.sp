@@ -188,7 +188,7 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
 {
     if(map_groups == INVALID_HANDLE) return false;
 
-    new count = 0;
+    new count = 0, result, rand;
     KvRewind(map_groups);
 
     KvGetSectionName(map_groups, map, length);
@@ -200,9 +200,20 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
         KvGotoFirstSubKey(map_groups);
 
         do{
-
-            KvGetSectionName(map_groups, map, length);
             count +=1;
+
+            //Use reservoir sampling to get random map from group
+            if(count == 1)
+            {
+                KvGetSectionName(map_groups, map, length);
+            }else{
+                rand = GetRandomInt(0, count - 1);
+
+                if(rand == count - 1)
+                {
+                    KvGetSectionName(map_groups, map, length);
+                }
+            }
 
             PrintToConsole(0, "map: %s", map);//TODO
         } while(KvGotoNextKey(map_groups));
