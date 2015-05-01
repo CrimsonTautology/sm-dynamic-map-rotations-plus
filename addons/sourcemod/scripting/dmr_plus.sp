@@ -31,7 +31,7 @@ public Plugin:myinfo =
 
 new Handle:g_Cvar_File = INVALID_HANDLE;
 new Handle:g_Cvar_GroupsFile = INVALID_HANDLE;
-new Handle:g_Cvar_MapKey = INVALID_HANDLE;
+new Handle:g_Cvar_NodeKey = INVALID_HANDLE;
 new Handle:g_Cvar_ForceNextmap = INVALID_HANDLE;
 new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
 
@@ -54,8 +54,8 @@ public OnPluginStart()
             "Location of the map groups keyvalues file",
             FCVAR_PLUGIN);
 
-    g_Cvar_MapKey = CreateConVar(
-            "dmr_map_key",
+    g_Cvar_NodeKey = CreateConVar(
+            "dmr_node_key",
             "",
             "The key used to base nextmap decisions on",
             FCVAR_PLUGIN);
@@ -76,20 +76,22 @@ public OnPluginStart()
     RegConsoleCmd("sm_dmr", Command_DMR, "TODO");
     RegConsoleCmd("sm_dmr2", Command_DMR2, "TODO");
 
+    CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+
 }
 
 public OnMapStart()
 {
-    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH];
+    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[PLATFORM_MAX_PATH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_GroupsFile, groups_file, sizeof(groups_file));
-    GetConVarString(g_Cvar_MapKey, map_key, sizeof(map_key));
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
 
-    LoadDMRFile(file, map_key, g_Rotation);
+    LoadDMRFile(file, node_key, g_Rotation);
     LoadDMRGroupsFile(groups_file, g_MapGroups);
 }
 
-LoadDMRFile(String:file[], String:map_key[], &Handle:rotation)
+LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
 {
     decl String:path[PLATFORM_MAX_PATH], String:val[MAX_VAL_LENGTH];
     BuildPath(Path_SM, path, sizeof(path), file);
@@ -104,15 +106,15 @@ LoadDMRFile(String:file[], String:map_key[], &Handle:rotation)
         return;
     }
 
-    //Read the default "start" key if map_key cvar is not set or invalid
-    if(!strlen(map_key) || !KvJumpToKey(rotation, map_key))
+    //Read the default "start" key if node_key cvar is not set or invalid
+    if(strlen(node_key) == 0 || !KvJumpToKey(rotation, node_key))
     {
         KvGetString(rotation, "start", val, sizeof(val));
 
         if(KvJumpToKey(rotation, val))
         {
-            LogMessage("Reset dmr_map_key to \"%s\"", val);
-            SetConVarString(g_Cvar_MapKey, val);
+            LogMessage("Reset dmr_node_key to \"%s\"", val);
+            SetConVarString(g_Cvar_NodeKey, val);
         }else{
             LogError("A valid \"start\" key was not defined in \"%s\"", file);
             SetFailState("A valid \"start\" key was not defined in \"%s\"", file);
@@ -141,7 +143,53 @@ LoadDMRGroupsFile(const String:file[], &Handle:map_groups)
     KvRewind(map_groups);
 }
 
-bool:GetMapFromKey(const String:map_key[], Handle:rotation, Handle:map_groups, String:map[], length)
+public Action:Command_DMR(client, args)
+{
+    //TODO
+    decl String:file[PLATFORM_MAX_PATH], String:node_key[PLATFORM_MAX_PATH], String:next_node_key[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
+    GetConVarString(g_Cvar_File, file, sizeof(file));
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+
+    GetMapFromKey(node_key, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
+    GetNextNodeKey(node_key, g_Rotation, next_node_key, sizeof(next_node_key));
+    PrintToConsole(0, "nextmap: %s\nnextmap_key: %s", nextmap, next_node_key);
+    SetConVarString(g_Cvar_NodeKey, next_node_key);
+
+    if(client)
+    {
+        //TODO;
+    }
+
+    return Plugin_Handled;
+}
+
+public Action:Command_DMR2(client, args)
+{
+    //TODO
+    decl String:group[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
+    GetCmdArgString(group, sizeof(group));
+
+    GetRandomMapFromGroup(group, g_MapGroups, nextmap, sizeof(nextmap));
+
+    PrintToConsole(0, "chose map: %s", nextmap);
+
+    return Plugin_Handled;
+}
+
+public Action:Timer_UpdateNextMap(Handle:timer)
+{
+    decl String:node_key[MAX_KEY_LENGTH], String:nextmap[MAX_KEY_LENGTH], String:next_node_key[MAX_KEY_LENGTH];
+
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+
+    GetNextNodeKey(node_key, g_Rotation, next_node_key, sizeof(next_node_key));
+    GetMapFromKey(node_key, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
+    SetNextMap(nextmap);
+
+    return Plugin_Continue;
+}
+
+bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, String:map[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
     if(map_groups == INVALID_HANDLE) return false;
@@ -149,7 +197,7 @@ bool:GetMapFromKey(const String:map_key[], Handle:rotation, Handle:map_groups, S
     decl String:group[PLATFORM_MAX_PATH];
 
     KvRewind(rotation);
-    if(KvJumpToKey(rotation, map_key))
+    if(KvJumpToKey(rotation, node_key))
     {
         if(KvGetString(rotation, "map", map, length, "") && strlen(map) > 0)
         {
@@ -157,8 +205,8 @@ bool:GetMapFromKey(const String:map_key[], Handle:rotation, Handle:map_groups, S
             //Throw error if map is not valid
             if(!IsMapValid(map))
             {
-                LogError("map \"%s\" in key \"%s\" is invalid.", map, map_key);
-                SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, map_key);
+                LogError("map \"%s\" in key \"%s\" is invalid.", map, node_key);
+                SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, node_key);
             }
 
             KvRewind(rotation);
@@ -170,8 +218,8 @@ bool:GetMapFromKey(const String:map_key[], Handle:rotation, Handle:map_groups, S
             //Throw error if group is not valid
             if(!GetRandomMapFromGroup(group, map_groups, map, length))
             {
-                LogError("group \"%s\" in key \"%s\" is invalid.", group, map_key);
-                SetFailState("Group \"%s\" in key \"%s\" is invalid.", group, map_key);
+                LogError("group \"%s\" in key \"%s\" is invalid.", group, node_key);
+                SetFailState("Group \"%s\" in key \"%s\" is invalid.", group, node_key);
             }
 
 
@@ -185,12 +233,12 @@ bool:GetMapFromKey(const String:map_key[], Handle:rotation, Handle:map_groups, S
     return false;
 }
 
-bool:GetGroupFromKey(const String:map_key[], Handle:rotation, String:group[], length)
+bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:group[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
     KvRewind(rotation);
-    if(KvJumpToKey(rotation, map_key))
+    if(KvJumpToKey(rotation, node_key))
     {
         KvGetString(rotation, "group", group, length);
 
@@ -202,7 +250,7 @@ bool:GetGroupFromKey(const String:map_key[], Handle:rotation, String:group[], le
     return false;
 }
 
-bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:nextmap_key[], length)
+bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_key[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
@@ -210,18 +258,18 @@ bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:nextmap_key[]
 
     KvRewind(rotation);
 
-    if(!KvJumpToKey(rotation, map_key))
+    if(!KvJumpToKey(rotation, node_key))
     {
-        LogError("map_key \"%s\" was not found.", map_key);
+        LogError("node_key \"%s\" was not found.", node_key);
         return false;
     }
 
     //First get the default map
-    KvGetString(rotation, "default_nextmap", nextmap_key, length);
+    KvGetString(rotation, "default_nextmap", next_node_key, length);
 
     //Go through remaining subkeys, where the key name being the next group and the body being a list of custom rules
     KvRewind(rotation);
-    KvJumpToKey(rotation, map_key);
+    KvJumpToKey(rotation, node_key);
     if(KvGotoFirstSubKey(rotation))
     {
         do
@@ -231,7 +279,7 @@ bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:nextmap_key[]
 
             if(MapConditionsAreMet(rotation))
             {
-                KvGetSectionName(rotation, nextmap_key, length);
+                KvGetSectionName(rotation, next_node_key, length);
             }
         } while(KvGotoNextKey(rotation));
     }
@@ -339,37 +387,4 @@ stock bool:MapConditionsAreMet(Handle:conditions)
     }
 
     return true;
-}
-
-public Action:Command_DMR(client, args)
-{
-    //TODO
-    decl String:file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH], String:nextmap_key[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
-    GetConVarString(g_Cvar_File, file, sizeof(file));
-    GetConVarString(g_Cvar_MapKey, map_key, sizeof(map_key));
-
-    GetMapFromKey(map_key, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
-    GetNextMapKey(map_key, g_Rotation, nextmap_key, sizeof(nextmap_key));
-    PrintToConsole(0, "nextmap: %s\nnextmap_key: %s", nextmap, nextmap_key);
-    SetConVarString(g_Cvar_MapKey, nextmap_key);
-
-    if(client)
-    {
-        //TODO;
-    }
-
-    return Plugin_Handled;
-}
-
-public Action:Command_DMR2(client, args)
-{
-    //TODO
-    decl String:group[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
-    GetCmdArgString(group, sizeof(group));
-
-    GetRandomMapFromGroup(group, g_MapGroups, nextmap, sizeof(nextmap));
-
-    PrintToConsole(0, "chose map: %s", nextmap);
-
-    return Plugin_Handled;
 }
