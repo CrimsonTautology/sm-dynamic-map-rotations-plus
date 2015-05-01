@@ -39,6 +39,7 @@ new Handle:g_Rotation = INVALID_HANDLE;
 new Handle:g_MapGroups = INVALID_HANDLE;
 
 new String:g_CachedNextNodeKey[PLATFORM_MAX_PATH];
+new Handle:g_CachedRandomMapTrie = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -80,6 +81,7 @@ public OnPluginStart()
 
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
+    g_CachedRandomMapTrie = CreateTrie();
 }
 
 public OnMapStart()
@@ -296,7 +298,10 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
 {
     if(map_groups == INVALID_HANDLE) return false;
 
-    new count = 0, result, rand;
+    //We only need to do a randomization once, see if we have a cached value
+    if(GetTrieString(g_CachedRandomMapTrie, group, map, length)) return true;
+
+    new count = 0, rand;
     KvRewind(map_groups);
 
     KvGetSectionName(map_groups, map, length);
@@ -323,6 +328,10 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
         } while(KvGotoNextKey(map_groups));
 
         KvRewind(map_groups);
+
+        //Cache the selected map
+        SetTrieString(g_CachedRandomMapTrie, group, map);
+
         return true;
     }
 
