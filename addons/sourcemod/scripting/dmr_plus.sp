@@ -202,23 +202,42 @@ bool:GetGroupFromKey(const String:map_key[], Handle:rotation, String:group[], le
     return false;
 }
 
-bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:next_map_key[], length)
+bool:GetNextMapKey(const String:map_key[], Handle:rotation, String:nextmap_key[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
+    decl String:val[MAX_VAL_LENGTH]; //TODO
+
     KvRewind(rotation);
 
-    if(KvJumpToKey(rotation, map_key))
+    if(!KvJumpToKey(rotation, map_key))
     {
-        KvGetString(rotation, "default_nextmap", next_map_key, length);
+        LogError("map_key \"%s\" was not found.", map_key);
+        return false;
+    }
 
-        KvRewind(rotation);
-        return true;
+    //First get the default map
+    KvGetString(rotation, "default_nextmap", nextmap_key, length);
+
+    //Go through remaining subkeys, where the key name being the next group and the body being a list of custom rules
+    KvRewind(rotation);
+    KvJumpToKey(rotation, map_key);
+    if(KvGotoFirstSubKey(rotation))
+    {
+        do
+        {
+            KvGetSectionName(rotation, val, sizeof(val));//TODO
+            PrintToConsole(0, "section: %s - %d", val, MapConditionsAreMet(rotation));//TODO
+
+            if(MapConditionsAreMet(rotation))
+            {
+                KvGetSectionName(rotation, nextmap_key, length);
+            }
+        } while(KvGotoNextKey(rotation));
     }
 
     KvRewind(rotation);
-    LogError("map_key \"%s\" was not found.", map_key);
-    return false;
+    return true;
 }
 
 bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[], length)
@@ -259,17 +278,80 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
     return false;
 }
 
+stock GetPlayerCount()
+{
+    new count = 0;
+
+    for(new i=1; i<=MaxClients; i++)
+    {
+        if(!IsClientInGame(i)) continue;
+        if(IsFakeClient(i)) continue;
+
+        count++;
+    }
+
+    return count;
+}
+
+stock GetAdminCount()
+{
+    new count = 0;
+
+    for(new i=1; i<=MaxClients; i++)
+    {
+        if(!IsClientInGame(i)) continue;
+        if(IsFakeClient(i)) continue;
+        if(GetUserAdmin(i) == INVALID_ADMIN_ID) continue;
+
+        count++;
+    }
+
+    return count;
+}
+
+stock bool:MapConditionsAreMet(Handle:conditions)
+{
+    decl String:val[MAX_VAL_LENGTH];
+    new count;
+
+    if(KvGetDataType(conditions, "players_lte") != KvData_None)
+    {
+        count = KvGetNum(conditions, "players_lte");
+        if(!(GetPlayerCount() <= count)) return false;
+    }
+
+    if(KvGetDataType(conditions, "players_gte") != KvData_None)
+    {
+        count = KvGetNum(conditions, "players_gte");
+        if(!(GetPlayerCount() >= count)) return false;
+    }
+
+    if(KvGetDataType(conditions, "admins_lte") != KvData_None)
+    {
+        count = KvGetNum(conditions, "admins_lte");
+        if(!(GetPlayerCount() <= count)) return false;
+    }
+
+    if(KvGetDataType(conditions, "admins_gte") != KvData_None)
+    {
+        count = KvGetNum(conditions, "admins_gte");
+        if(!(GetPlayerCount() >= count)) return false;
+    }
+
+    return true;
+}
+
 public Action:Command_DMR(client, args)
 {
     //TODO
-    decl String:file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH], String:next_map_key[PLATFORM_MAX_PATH], String:next_map[PLATFORM_MAX_PATH];
+    decl String:file[PLATFORM_MAX_PATH], String:map_key[PLATFORM_MAX_PATH], String:nextmap_key[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_MapKey, map_key, sizeof(map_key));
 
-    GetMapFromKey(map_key, g_Rotation, g_MapGroups, next_map, sizeof(next_map));
-    GetNextMapKey(map_key, g_Rotation, next_map_key, sizeof(next_map_key));
-    PrintToConsole(0, "next_map: %s\nnext_map_key: %s", next_map, next_map_key);
-    SetConVarString(g_Cvar_MapKey, next_map_key);
+    GetMapFromKey(map_key, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
+    GetNextMapKey(map_key, g_Rotation, nextmap_key, sizeof(nextmap_key));
+    PrintToConsole(0, "nextmap: %s\nnextmap_key: %s", nextmap, nextmap_key);
+    SetConVarString(g_Cvar_MapKey, nextmap_key);
 
     if(client)
     {
@@ -282,12 +364,12 @@ public Action:Command_DMR(client, args)
 public Action:Command_DMR2(client, args)
 {
     //TODO
-    decl String:group[PLATFORM_MAX_PATH], String:next_map[PLATFORM_MAX_PATH];
+    decl String:group[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
     GetCmdArgString(group, sizeof(group));
 
-    GetRandomMapFromGroup(group, g_MapGroups, next_map, sizeof(next_map));
+    GetRandomMapFromGroup(group, g_MapGroups, nextmap, sizeof(nextmap));
 
-    PrintToConsole(0, "chose map: %s", next_map);
+    PrintToConsole(0, "chose map: %s", nextmap);
 
     return Plugin_Handled;
 }

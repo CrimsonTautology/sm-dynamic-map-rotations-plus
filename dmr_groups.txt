@@ -19,4 +19,11 @@
         "the_race" {}
     }
 
+    "test"
+    {
+        "cp_badlands" {}
+        "cp_gravelpit" {}
+        "cp_gorge" {}
+    }
+
 }

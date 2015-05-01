@@ -28,7 +28,13 @@
     "30"
     {
         "map"            "cp_dustbowl"
-        "default_nextmap"    "10"
+        "default_nextmap"    "test"
+    }
+
+    "test"
+    {
+        "group"          "low_population"
+        "default_nextmap"   "10"
     }
 
     "bdlnds"
