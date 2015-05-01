@@ -38,6 +38,8 @@ new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
 new Handle:g_Rotation = INVALID_HANDLE;
 new Handle:g_MapGroups = INVALID_HANDLE;
 
+new String:g_CachedNextNodeKey[PLATFORM_MAX_PATH];
+
 public OnPluginStart()
 {
     CreateConVar("dmr_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
@@ -89,6 +91,12 @@ public OnMapStart()
 
     LoadDMRFile(file, node_key, g_Rotation);
     LoadDMRGroupsFile(groups_file, g_MapGroups);
+}
+
+OnMapEnd()
+{
+    //Update the node key to the next node key used to determine the next level
+    SetConVarString(g_Cvar_NodeKey, g_CachedNextNodeKey);
 }
 
 LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
@@ -182,8 +190,9 @@ public Action:Timer_UpdateNextMap(Handle:timer)
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
 
-    GetNextNodeKey(node_key, g_Rotation, next_node_key, sizeof(next_node_key));
-    GetMapFromKey(node_key, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
+    GetNextNodeKey(node_key, g_Rotation, g_CachedNextNodeKey, sizeof(g_CachedNextNodeKey));
+    GetMapFromKey(g_CachedNextNodeKey, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
+
     SetNextMap(nextmap);
 
     return Plugin_Continue;
@@ -254,8 +263,6 @@ bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_k
 {
     if(rotation == INVALID_HANDLE) return false;
 
-    decl String:val[MAX_VAL_LENGTH]; //TODO
-
     KvRewind(rotation);
 
     if(!KvJumpToKey(rotation, node_key))
@@ -274,9 +281,6 @@ bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_k
     {
         do
         {
-            KvGetSectionName(rotation, val, sizeof(val));//TODO
-            PrintToConsole(0, "section: %s - %d", val, MapConditionsAreMet(rotation));//TODO
-
             if(MapConditionsAreMet(rotation))
             {
                 KvGetSectionName(rotation, next_node_key, length);
