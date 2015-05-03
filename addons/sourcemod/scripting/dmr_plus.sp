@@ -100,7 +100,7 @@ public OnMapEnd()
 {
     //Update the node key to the next node key used to determine the next level
     SetConVarString(g_Cvar_NodeKey, g_CachedNextNodeKey);
-    LogMessage("HIT OnMapEnd, g_CachedNextNodeKey=%s", g_CachedNextNodeKey);
+    //LogMessage("HIT OnMapEnd, g_CachedNextNodeKey=%s", g_CachedNextNodeKey);
 
     if(g_CachedRandomMapTrie != INVALID_HANDLE) CloseHandle(g_CachedRandomMapTrie);
 }
@@ -198,7 +198,7 @@ public Action:Timer_UpdateNextMap(Handle:timer)
 
     GetNextNodeKey(node_key, g_Rotation, g_CachedNextNodeKey, sizeof(g_CachedNextNodeKey));
     GetMapFromKey(g_CachedNextNodeKey, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
-    LogMessage("HIT UpdateNextMap, g_Cvar_NodeKey=%s, g_CachedNextNodeKey=%s nextmap=%s", node_key, g_CachedNextNodeKey, nextmap);
+    //LogMessage("HIT UpdateNextMap, g_Cvar_NodeKey=%s, g_CachedNextNodeKey=%s nextmap=%s", node_key, g_CachedNextNodeKey, nextmap);
 
     SetNextMap(nextmap);
 
