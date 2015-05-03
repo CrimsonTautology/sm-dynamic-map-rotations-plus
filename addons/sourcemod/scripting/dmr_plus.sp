@@ -40,6 +40,7 @@ new Handle:g_MapGroups = INVALID_HANDLE;
 
 new String:g_CachedNextNodeKey[PLATFORM_MAX_PATH];
 new Handle:g_CachedRandomMapTrie = INVALID_HANDLE;
+new Handle:g_CachedMapHistoryTrie = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -94,6 +95,8 @@ public OnMapStart()
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
     g_CachedRandomMapTrie = CreateTrie();
+
+    CacheMapHistory(g_CachedMapHistoryTrie);
 }
 
 public OnMapEnd()
@@ -155,6 +158,20 @@ LoadDMRGroupsFile(const String:file[], &Handle:map_groups)
     }
 
     KvRewind(map_groups);
+}
+
+//Cache the most recently played maps to compare with later
+CacheMapHistory(&Handle:trie)
+{
+    if(trie != INVALID_HANDLE) CloseHandle(trie);
+
+    decl String:map[PLATFORM_MAX_PATH], String:junk[1], starttime;
+
+    for(new i=0; i < GetMapHistorySize(); i++)
+    {
+        GetMapHistory(i, map, sizeof(map), junk, 0, starttime);
+        SetTrieValue(trie, map, 1);
+    }
 }
 
 public Action:Command_DMR(client, args)
