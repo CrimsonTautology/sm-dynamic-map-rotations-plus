@@ -432,7 +432,7 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
 stock Handle:GetNextMaps(const String:node_key[], ammount)
 {
     new Handle:maps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
-    decl String:current_key[MAX_KEY_LENGTH], String:tmp[MAX_KEY_LENGTH], String:map[PLATFORM_MAX_PATH];
+    decl String:current_key[MAX_KEY_LENGTH], String:next_key[MAX_KEY_LENGTH], String:map[PLATFORM_MAX_PATH];
 
     //Start with node_key
     strcopy(current_key, sizeof(current_key), node_key);
@@ -440,9 +440,9 @@ stock Handle:GetNextMaps(const String:node_key[], ammount)
     //Traverse the dmr graph getting the map that would be selected with current server conditions
     for(new i = 0; i < ammount; i++)
     {
-        GetNextNodeKey(current_key, g_Rotation, tmp, sizeof(tmp));
-        GetMapFromKey(node_key, g_Rotation, g_MapGroups, map, sizeof(map));
-        strcopy(current_key, sizeof(current_key), tmp);
+        GetNextNodeKey(current_key, g_Rotation, next_key, sizeof(next_key));
+        GetMapFromKey(next_key, g_Rotation, g_MapGroups, map, sizeof(map));
+        strcopy(current_key, sizeof(current_key), next_key);
         PushArrayString(maps, map);
     }
 
