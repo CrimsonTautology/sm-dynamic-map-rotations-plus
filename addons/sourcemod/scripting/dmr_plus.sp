@@ -108,14 +108,7 @@ public OnMapEnd()
     if(g_CachedRandomMapTrie != INVALID_HANDLE) CloseHandle(g_CachedRandomMapTrie);
 
     //Save this map in the map history array
-    decl String:map[PLATFORM_MAX_PATH];
-    GetCurrentMap(map, sizeof(map));
-    PushArrayString(g_MapHistoryArray, map);
-
-    if (GetArraySize(g_MapHistoryArray) > GetConVarInt(g_Cvar_ExcludeMaps))
-    {
-        RemoveFromArray(g_MapHistoryArray, 0);
-    }	
+    UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
 }
 
 LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
@@ -168,6 +161,18 @@ LoadDMRGroupsFile(const String:file[], &Handle:map_groups)
     }
 
     KvRewind(map_groups);
+}
+
+UpdateMapHistory(Handle:history, limit)
+{
+    decl String:map[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, sizeof(map));
+    PushArrayString(history, map);
+
+    if (GetArraySize(history) > limit)
+    {
+        RemoveFromArray(history, 0);
+    }	
 }
 
 public Action:Command_DMR(client, args)
