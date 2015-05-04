@@ -77,7 +77,8 @@ public OnPluginStart()
             true,
             0.0);
 
-    RegConsoleCmd("sm_nextmaps", Command_Nextmaps, "Print nextmaps in rotation");
+    RegConsoleCmd("sm_nextmaps", Command_Nextmaps, "Print next maps in rotation");
+    RegConsoleCmd("sm_nextnodes", Command_Nextnodes, "Print dmr nodes in rotation");
     RegConsoleCmd("sm_dmr", Command_DMR, "TODO");
     RegConsoleCmd("sm_dmr2", Command_DMR2, "TODO");
 
@@ -187,6 +188,34 @@ public Action:Command_Nextmaps(client, args)
     new Handle:maps = GetNextMaps(node_key, 5);
 
     Format(nextmaps, sizeof(nextmaps), "Next Maps:");
+    new count = GetArraySize(maps);
+    for (new i = 0; i < count; i++)
+    {
+        GetArrayString(maps, i, map, sizeof(map));
+        if (i > 0)
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
+        }
+        else
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
+        }
+    }
+    CloseHandle(maps);
+
+    PrintToChatAll(nextmaps);
+    PrintToConsole(0, nextmaps);
+}
+
+public Action:Command_Nextnodes(client, args)
+{
+    decl String:nextmaps[256], String:node_key[PLATFORM_MAX_PATH];
+    decl String:map[PLATFORM_MAX_PATH];
+
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+    new Handle:maps = GetNextMaps(node_key, 10, true);
+
+    Format(nextmaps, sizeof(nextmaps), "Next Nodes:");
     new count = GetArraySize(maps);
     for (new i = 0; i < count; i++)
     {
@@ -429,7 +458,7 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
     return false;
 }
 
-stock Handle:GetNextMaps(const String:node_key[], ammount)
+stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
 {
     new Handle:maps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
     decl String:current_key[MAX_KEY_LENGTH], String:next_key[MAX_KEY_LENGTH], String:map[PLATFORM_MAX_PATH];
@@ -443,7 +472,8 @@ stock Handle:GetNextMaps(const String:node_key[], ammount)
         GetNextNodeKey(current_key, g_Rotation, next_key, sizeof(next_key));
         GetMapFromKey(next_key, g_Rotation, g_MapGroups, map, sizeof(map));
         strcopy(current_key, sizeof(current_key), next_key);
-        PushArrayString(maps, map);
+
+        PushArrayString(maps, keys ? current_key : map);
     }
 
     return maps;
