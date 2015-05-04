@@ -324,9 +324,14 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
     //We only need to do a randomization once, see if we have a cached value
     if(GetTrieString(g_CachedRandomMapTrie, group, map, length)) return true;
 
+    new String:section[PLATFORM_MAX_PATH];
     new count = 0, rand;
-    KvRewind(map_groups);
 
+    //Maintain a seperate calculation that checks against the map history
+    new history_count = 0;
+    new bool:use_history = false;
+
+    KvRewind(map_groups);
     KvGetSectionName(map_groups, map, length);
 
     if(KvJumpToKey(map_groups, group))
@@ -334,17 +339,48 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
         KvGotoFirstSubKey(map_groups);
 
         //Use reservoir sampling to get random map from group
+        //NOTE: We maintain two seperate reservoirs to prevent previously played maps from being
+        //randomly selected. We assume first that they are all recently played and use the first
+        //resevoir but once we find one that is not recently played we switch over to the second
+        //resevoir. Also note that we use two seperate counts to maintain equal distribution
+        //for our random selection.
         do
         {
-            count +=1;
+            KvGetSectionName(map_groups, section, sizeof(section));
 
-            if(count == 1) {
-                KvGetSectionName(map_groups, map, length);
-            }else{
-                rand = GetRandomInt(0, count - 1);
+            //First we assume that all maps in this group are recently played so we ignore history
+            if(!use_history)
+            {
+                count +=1;
 
-                if(rand == count - 1) {
+                if(count == 1) {
                     KvGetSectionName(map_groups, map, length);
+                }else{
+                    rand = GetRandomInt(0, count - 1);
+
+                    if(rand == count - 1) {
+                        KvGetSectionName(map_groups, map, length);
+                    }
+                }
+            }
+
+            //If the section map was not recently played we proceed to ignore all 
+            //TODO:  I don't know how sourcemod arrays are implemented and
+            //FindStringInArray may be O(n).  It may be better to maintain a seperate
+            //existance trie to check against to be more efficient.
+            if(FindStringInArray(g_MapHistoryArray, section) == -1)
+            {
+                use_history = true;
+                history_count += 1;
+
+                if(history_count == 1){
+                    KvGetSectionName(map_groups, map, length);
+                }else{
+                    rand = GetRandomInt(0, history_count - 1);
+
+                    if(rand == history_count - 1) {
+                        KvGetSectionName(map_groups, map, length);
+                    }
                 }
             }
 
