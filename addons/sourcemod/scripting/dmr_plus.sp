@@ -33,14 +33,14 @@ new Handle:g_Cvar_File = INVALID_HANDLE;
 new Handle:g_Cvar_GroupsFile = INVALID_HANDLE;
 new Handle:g_Cvar_NodeKey = INVALID_HANDLE;
 new Handle:g_Cvar_ForceNextmap = INVALID_HANDLE;
-new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
+new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
 
 new Handle:g_Rotation = INVALID_HANDLE;
 new Handle:g_MapGroups = INVALID_HANDLE;
 
 new String:g_CachedNextNodeKey[PLATFORM_MAX_PATH];
 new Handle:g_CachedRandomMapTrie = INVALID_HANDLE;
-new Handle:g_CachedMapHistoryTrie = INVALID_HANDLE;
+new Handle:g_MapHistoryArray = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -69,17 +69,19 @@ public OnPluginStart()
             "",
             "Override the nextmap",
             FCVAR_PLUGIN);
-
-    g_Cvar_Nextmap = CreateConVar(
-            "sm_nextmap",
-            "",
-            "The current nextmap",
-            FCVAR_PLUGIN);
+    g_Cvar_ExcludeMaps = CreateConVar(
+            "dmr_exclude",
+            "5",
+            "Specifies how many past maps to exclude when randomly selecting a map from a group.",
+            _,
+            true,
+            0.0);
 
 
     RegConsoleCmd("sm_dmr", Command_DMR, "TODO");
     RegConsoleCmd("sm_dmr2", Command_DMR2, "TODO");
 
+    g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
 }
 
 public OnMapStart()
@@ -95,8 +97,6 @@ public OnMapStart()
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
     g_CachedRandomMapTrie = CreateTrie();
-
-    CacheMapHistory(g_CachedMapHistoryTrie);
 }
 
 public OnMapEnd()
@@ -106,6 +106,16 @@ public OnMapEnd()
     //LogMessage("HIT OnMapEnd, g_CachedNextNodeKey=%s", g_CachedNextNodeKey);
 
     if(g_CachedRandomMapTrie != INVALID_HANDLE) CloseHandle(g_CachedRandomMapTrie);
+
+    //Save this map in the map history array
+    decl String:map[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, sizeof(map));
+    PushArrayString(g_MapHistoryArray, map);
+
+    if (GetArraySize(g_MapHistoryArray) > GetConVarInt(g_Cvar_ExcludeMaps))
+    {
+        RemoveFromArray(g_MapHistoryArray, 0);
+    }	
 }
 
 LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
