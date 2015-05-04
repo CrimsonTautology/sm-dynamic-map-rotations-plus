@@ -77,7 +77,7 @@ public OnPluginStart()
             true,
             0.0);
 
-
+    RegConsoleCmd("sm_nextmaps", Command_Nextmaps, "Print nextmaps in rotation");
     RegConsoleCmd("sm_dmr", Command_DMR, "TODO");
     RegConsoleCmd("sm_dmr2", Command_DMR2, "TODO");
 
@@ -176,6 +176,34 @@ UpdateMapHistory(Handle:history, limit)
     {
         RemoveFromArray(history, 0);
     }	
+}
+
+public Action:Command_Nextmaps(client, args)
+{
+    decl String:nextmaps[256], String:node_key[PLATFORM_MAX_PATH];
+    decl String:map[PLATFORM_MAX_PATH];
+
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+    new Handle:maps = GetNextMaps(node_key, 5);
+
+    Format(nextmaps, sizeof(nextmaps), "Next Maps:");
+    new count = GetArraySize(maps);
+    for (new i = 0; i < count; i++)
+    {
+        GetArrayString(maps, i, map, sizeof(map));
+        if (i > 0)
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
+        }
+        else
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
+        }
+    }
+    CloseHandle(maps);
+
+    PrintToChatAll(nextmaps);
+    PrintToConsole(0, nextmaps);
 }
 
 public Action:Command_DMR(client, args)
@@ -399,6 +427,26 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
 
     KvRewind(map_groups);
     return false;
+}
+
+stock Handle:GetNextMaps(const String:node_key[], ammount)
+{
+    new Handle:maps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
+    decl String:current_key[MAX_KEY_LENGTH], String:tmp[MAX_KEY_LENGTH], String:map[PLATFORM_MAX_PATH];
+
+    //Start with node_key
+    strcopy(current_key, sizeof(current_key), node_key);
+
+    //Traverse the dmr graph getting the map that would be selected with current server conditions
+    for(new i = 0; i < ammount; i++)
+    {
+        GetNextNodeKey(current_key, g_Rotation, tmp, sizeof(tmp));
+        GetMapFromKey(node_key, g_Rotation, g_MapGroups, map, sizeof(map));
+        strcopy(current_key, sizeof(current_key), tmp);
+        PushArrayString(maps, map);
+    }
+
+    return maps;
 }
 
 stock GetPlayerCount()
