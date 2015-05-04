@@ -82,11 +82,12 @@ public OnPluginStart()
     RegConsoleCmd("sm_dmr2", Command_DMR2, "TODO");
 
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
+    g_CachedRandomMapTrie = CreateTrie();
 }
 
 public OnMapStart()
 {
-    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[PLATFORM_MAX_PATH];
+    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[PLATFORM_MAX_PATH], String:group[PLATFORM_MAX_PATH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_GroupsFile, groups_file, sizeof(groups_file));
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
@@ -96,7 +97,11 @@ public OnMapStart()
 
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
-    g_CachedRandomMapTrie = CreateTrie();
+    //Remove current map group from our random map trie cache
+    if(GetGroupFromKey(node_key, g_Rotation, group, sizeof(group)))
+    {
+        RemoveFromTrie(g_CachedRandomMapTrie, group); 
+    }
 }
 
 public OnMapEnd()
@@ -104,8 +109,6 @@ public OnMapEnd()
     //Update the node key to the next node key used to determine the next level
     SetConVarString(g_Cvar_NodeKey, g_CachedNextNodeKey);
     //LogMessage("HIT OnMapEnd, g_CachedNextNodeKey=%s", g_CachedNextNodeKey);
-
-    if(g_CachedRandomMapTrie != INVALID_HANDLE) CloseHandle(g_CachedRandomMapTrie);
 
     //Save this map in the map history array
     UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
