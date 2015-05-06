@@ -103,6 +103,9 @@ public OnMapStart()
     {
         RemoveFromTrie(g_CachedRandomMapTrie, group); 
     }
+
+    //Save this map in the map history array
+    UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
 }
 
 public OnMapEnd()
@@ -110,9 +113,6 @@ public OnMapEnd()
     //Update the node key to the next node key used to determine the next level
     SetConVarString(g_Cvar_NodeKey, g_CachedNextNodeKey);
     //LogMessage("HIT OnMapEnd, g_CachedNextNodeKey=%s", g_CachedNextNodeKey);
-
-    //Save this map in the map history array
-    UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
 }
 
 LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
@@ -177,6 +177,14 @@ UpdateMapHistory(Handle:history, limit)
     {
         RemoveFromArray(history, 0);
     }	
+}
+
+//TODO:  I don't know how sourcemod arrays are implemented and
+//FindStringInArray may be O(n).  It may be better to maintain a seperate
+//existance trie to check against to be more efficient.
+bool:MapWasRecentlyPlayed(String:map[])
+{
+    return FindStringInArray(g_MapHistoryArray, map) >= 0
 }
 
 public Action:Command_Nextmaps(client, args)
@@ -425,10 +433,7 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
             }
 
             //If the section map was not recently played we proceed to ignore all 
-            //TODO:  I don't know how sourcemod arrays are implemented and
-            //FindStringInArray may be O(n).  It may be better to maintain a seperate
-            //existance trie to check against to be more efficient.
-            if(FindStringInArray(g_MapHistoryArray, section) == -1)
+            if(!MapWasRecentlyPlayed(section))
             {
                 use_history = true;
                 history_count += 1;
