@@ -82,9 +82,6 @@ public OnPluginStart()
     RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "Unset a forced next map and have DMR resume");
     RegAdminCmd("sm_nextmapnow", Command_NextmapNow, ADMFLAG_CHANGEMAP, "Force a mapchange to the determined next map right now");
 
-    RegAdminCmd("sm_dmr", Command_DMR, ADMFLAG_SLAY, "TODO");
-    RegAdminCmd("sm_dmr2", Command_DMR2, ADMFLAG_SLAY, "TODO");
-
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
     g_CachedRandomMapTrie = CreateTrie();
 }
@@ -284,40 +281,6 @@ public Action:Command_NextmapNow(client, args)
     decl String:map[PLATFORM_MAX_PATH];
     GetNextMap(map, sizeof(map));
     ForceChangeLevel(map, "sm_nextmapnow Command");
-
-    return Plugin_Handled;
-}
-
-
-public Action:Command_DMR(client, args)
-{
-    //TODO
-    decl String:file[PLATFORM_MAX_PATH], String:node_key[PLATFORM_MAX_PATH], String:next_node_key[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
-    GetConVarString(g_Cvar_File, file, sizeof(file));
-    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
-
-    GetMapFromKey(node_key, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
-    GetNextNodeKey(node_key, g_Rotation, next_node_key, sizeof(next_node_key));
-    PrintToConsole(0, "nextmap: %s\nnextmap_key: %s", nextmap, next_node_key);
-    SetConVarString(g_Cvar_NodeKey, next_node_key);
-
-    if(client)
-    {
-        //TODO;
-    }
-
-    return Plugin_Handled;
-}
-
-public Action:Command_DMR2(client, args)
-{
-    //TODO
-    decl String:group[PLATFORM_MAX_PATH], String:nextmap[PLATFORM_MAX_PATH];
-    GetCmdArgString(group, sizeof(group));
-
-    GetRandomMapFromGroup(group, g_MapGroups, nextmap, sizeof(nextmap));
-
-    PrintToConsole(0, "chose map: %s", nextmap);
 
     return Plugin_Handled;
 }
