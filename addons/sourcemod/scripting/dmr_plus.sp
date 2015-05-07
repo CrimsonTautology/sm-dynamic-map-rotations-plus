@@ -32,11 +32,12 @@ public Plugin:myinfo =
 new Handle:g_Cvar_File = INVALID_HANDLE;
 new Handle:g_Cvar_GroupsFile = INVALID_HANDLE;
 new Handle:g_Cvar_NodeKey = INVALID_HANDLE;
-new Handle:g_Cvar_ForceNextmap = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
 
 new Handle:g_Rotation = INVALID_HANDLE;
 new Handle:g_MapGroups = INVALID_HANDLE;
+
+new bool:g_ForceNextMap = false;
 
 new String:g_CachedNextNodeKey[PLATFORM_MAX_PATH];
 new Handle:g_CachedRandomMapTrie = INVALID_HANDLE;
@@ -44,6 +45,8 @@ new Handle:g_MapHistoryArray = INVALID_HANDLE;
 
 public OnPluginStart()
 {
+    LoadTranslations("common.phrases");
+
     CreateConVar("dmr_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
 
     g_Cvar_File = CreateConVar(
@@ -64,11 +67,6 @@ public OnPluginStart()
             "The key used to base nextmap decisions on",
             FCVAR_PLUGIN);
 
-    g_Cvar_ForceNextmap = CreateConVar(
-            "dmr_force_nextmap",
-            "",
-            "Override the nextmap",
-            FCVAR_PLUGIN);
     g_Cvar_ExcludeMaps = CreateConVar(
             "dmr_exclude",
             "5",
@@ -79,8 +77,12 @@ public OnPluginStart()
 
     RegConsoleCmd("sm_nextmaps", Command_Nextmaps, "Print next maps in rotation");
     RegConsoleCmd("sm_nextnodes", Command_Nextnodes, "Print dmr nodes in rotation");
-    RegConsoleCmd("sm_dmr", Command_DMR, "TODO");
-    RegConsoleCmd("sm_dmr2", Command_DMR2, "TODO");
+
+    RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
+    RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "sm_unsetnextmap");
+
+    RegAdminCmd("sm_dmr", Command_DMR, ADMFLAG_SLAY, "TODO");
+    RegAdminCmd("sm_dmr2", Command_DMR2, ADMFLAG_SLAY, "TODO");
 
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
     g_CachedRandomMapTrie = CreateTrie();
@@ -110,9 +112,11 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    //Update the node key to the next node key used to determine the next level
-    SetConVarString(g_Cvar_NodeKey, g_CachedNextNodeKey);
-    //LogMessage("HIT OnMapEnd, g_CachedNextNodeKey=%s", g_CachedNextNodeKey);
+    if(!ForcedNextMap())
+    {
+        //Update the node key to the next node key used to determine the next level
+        SetConVarString(g_Cvar_NodeKey, g_CachedNextNodeKey);
+    }
 }
 
 LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
@@ -179,14 +183,6 @@ UpdateMapHistory(Handle:history, limit)
     }	
 }
 
-//TODO:  I don't know how sourcemod arrays are implemented and
-//FindStringInArray may be O(n).  It may be better to maintain a seperate
-//existance trie to check against to be more efficient.
-bool:MapWasRecentlyPlayed(String:map[])
-{
-    return FindStringInArray(g_MapHistoryArray, map) >= 0
-}
-
 public Action:Command_Nextmaps(client, args)
 {
     decl String:nextmaps[256], String:node_key[PLATFORM_MAX_PATH];
@@ -243,6 +239,36 @@ public Action:Command_Nextnodes(client, args)
     PrintToConsole(0, nextmaps);
 }
 
+public Action:Command_SetNextmap(client, args)
+{
+    if (args < 1)
+    {
+        ReplyToCommand(client, "[DMR] Usage: sm_setnextmap <map>");
+        return Plugin_Handled;
+    }
+
+    decl String:map[64];
+    GetCmdArg(1, map, sizeof(map));
+
+    if (!IsMapValid(map))
+    {
+        ReplyToCommand(client, "[DMR] %t", "Map was not found", map);
+        return Plugin_Handled;
+    }
+
+    ShowActivity(client, "%t", "Cvar changed", "sm_nextmap", map);
+
+    g_ForceNextMap = true;
+    SetNextMap(map);
+
+    return Plugin_Handled;
+}
+
+public Action:Command_UnsetNextmap(client, args)
+{
+    return Plugin_Handled;
+}
+
 public Action:Command_DMR(client, args)
 {
     //TODO
@@ -278,18 +304,39 @@ public Action:Command_DMR2(client, args)
 
 public Action:Timer_UpdateNextMap(Handle:timer)
 {
+    //Skip this we have forced the next map
+    if(ForcedNextMap()) return Plugin_Continue;
+
+    UpdateNextMap();
+
+    return Plugin_Continue;
+}
+
+UpdateNextMap()
+{
     decl String:node_key[MAX_KEY_LENGTH], String:nextmap[MAX_KEY_LENGTH], String:next_node_key[MAX_KEY_LENGTH];
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
 
     GetNextNodeKey(node_key, g_Rotation, g_CachedNextNodeKey, sizeof(g_CachedNextNodeKey));
     GetMapFromKey(g_CachedNextNodeKey, g_Rotation, g_MapGroups, nextmap, sizeof(nextmap));
-    //LogMessage("HIT UpdateNextMap, g_Cvar_NodeKey=%s, g_CachedNextNodeKey=%s nextmap=%s", node_key, g_CachedNextNodeKey, nextmap);
 
     SetNextMap(nextmap);
-
-    return Plugin_Continue;
 }
+
+bool:ForcedNextMap()
+{
+    return g_ForceNextMap;
+}
+
+//TODO:  I don't know how sourcemod arrays are implemented and
+//FindStringInArray may be O(n).  It may be better to maintain a seperate
+//existance trie to check against to be more efficient.
+bool:MapWasRecentlyPlayed(String:map[])
+{
+    return FindStringInArray(g_MapHistoryArray, map) >= 0;
+}
+
 
 bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, String:map[], length)
 {
