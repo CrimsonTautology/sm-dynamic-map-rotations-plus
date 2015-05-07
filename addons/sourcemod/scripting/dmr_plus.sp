@@ -82,6 +82,8 @@ public OnPluginStart()
     RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "Unset a forced next map and have DMR resume");
     RegAdminCmd("sm_nextmapnow", Command_NextmapNow, ADMFLAG_CHANGEMAP, "Force a mapchange to the determined next map right now");
 
+    RegAdminCmd("sm_dmr", Command_DMR, ADMFLAG_CHANGEMAP, "TODO");
+
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
     g_CachedRandomMapTrie = CreateTrie();
 }
@@ -281,6 +283,21 @@ public Action:Command_NextmapNow(client, args)
     decl String:map[PLATFORM_MAX_PATH];
     GetNextMap(map, sizeof(map));
     ForceChangeLevel(map, "sm_nextmapnow Command");
+
+    return Plugin_Handled;
+}
+
+public Action:Command_DMR(client, args)
+{
+    if (args < 1)
+    {
+        return Plugin_Handled;
+    }
+
+    decl String:val[PLATFORM_MAX_PATH];
+    GetCmdArg(1, val, sizeof(val));
+
+    PrintToServer("Value=%d", CompareTimeFromString(val));
 
     return Plugin_Handled;
 }
@@ -545,6 +562,54 @@ stock GetAdminCount()
     return count;
 }
 
+/**
+    Return  1 if given time is after current time
+            0 if given time same as now
+           -1 if given time is before current time
+*/
+stock CompareTimeFromString(const String:time[])
+{
+    decl String:tmp[2][8];
+
+    ExplodeString(time, ":", tmp, 2, 8);
+    new hour   = StringToInt(tmp[0]);
+    new minute = StringToInt(tmp[1]);
+
+    return CompareTime(hour, minute);
+}
+
+/**
+    Return  1 if given time is after current time
+            0 if given time same as now
+           -1 if given time is before current time
+*/
+stock CompareTime(hour, minute)
+{
+    decl String:tmp[16];
+
+    FormatTime(tmp, sizeof(tmp), "%H");
+    new hour_now = StringToInt(tmp);
+
+    FormatTime(tmp, sizeof(tmp), "%M");
+    new minute_now = StringToInt(tmp);
+
+    if(hour > hour_now)
+    {
+        return 1;
+    }else if(hour < hour_now)
+    {
+        return -1;
+    }else if (minute > minute_now)
+    {
+        return 1;
+    }else if (minute < minute_now)
+    {
+        return -1;
+    }
+    
+    return 0;
+}
+
 stock bool:MapConditionsAreMet(Handle:conditions)
 {
     decl String:val[MAX_VAL_LENGTH];
@@ -572,6 +637,18 @@ stock bool:MapConditionsAreMet(Handle:conditions)
     {
         count = KvGetNum(conditions, "admins_gte");
         if(!(GetPlayerCount() >= count)) return false;
+    }
+
+    if(KvGetDataType(conditions, "time_lte") != KvData_None)
+    {
+        KvGetString(conditions, "time_lte", val, sizeof(val));
+        if(CompareTimeFromString(val) > 0 ) return false;
+    }
+
+    if(KvGetDataType(conditions, "time_gte") != KvData_None)
+    {
+        KvGetString(conditions, "time_gte", val, sizeof(val));
+        if(CompareTimeFromString(val) < 0 ) return false;
     }
 
     return true;
