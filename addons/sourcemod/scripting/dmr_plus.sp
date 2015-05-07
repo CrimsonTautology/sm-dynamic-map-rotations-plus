@@ -266,6 +266,15 @@ public Action:Command_SetNextmap(client, args)
 
 public Action:Command_UnsetNextmap(client, args)
 {
+    if(!ForcedNextMap())
+    {
+        ReplyToCommand(client, "[DMR] There was no forced nextmap to unset");
+    }else{
+        g_ForceNextMap = false;
+        UpdateNextMap();
+        ReplyToCommand(client, "[DMR] There was no forced nextmap to unset");
+    }
+
     return Plugin_Handled;
 }
 
