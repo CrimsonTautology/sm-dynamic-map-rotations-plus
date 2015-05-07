@@ -78,8 +78,9 @@ public OnPluginStart()
     RegConsoleCmd("sm_nextmaps", Command_Nextmaps, "Print next maps in rotation");
     RegConsoleCmd("sm_nextnodes", Command_Nextnodes, "Print dmr nodes in rotation");
 
-    RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
-    RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "sm_unsetnextmap");
+    RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "Force the next map and prevent DMR from running for the duration of this map");
+    RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "Unset a forced next map and have DMR resume");
+    RegAdminCmd("sm_nextmapnow", Command_NextmapNow, ADMFLAG_CHANGEMAP, "Force a mapchange to the determined next map right now");
 
     RegAdminCmd("sm_dmr", Command_DMR, ADMFLAG_SLAY, "TODO");
     RegAdminCmd("sm_dmr2", Command_DMR2, ADMFLAG_SLAY, "TODO");
@@ -247,7 +248,7 @@ public Action:Command_SetNextmap(client, args)
         return Plugin_Handled;
     }
 
-    decl String:map[64];
+    decl String:map[PLATFORM_MAX_PATH];
     GetCmdArg(1, map, sizeof(map));
 
     if (!IsMapValid(map))
@@ -277,6 +278,16 @@ public Action:Command_UnsetNextmap(client, args)
 
     return Plugin_Handled;
 }
+
+public Action:Command_NextmapNow(client, args)
+{
+    decl String:map[PLATFORM_MAX_PATH];
+    GetNextMap(map, sizeof(map));
+    ForceChangeLevel(map, "sm_nextmapnow Command");
+
+    return Plugin_Handled;
+}
+
 
 public Action:Command_DMR(client, args)
 {
