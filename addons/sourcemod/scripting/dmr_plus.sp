@@ -29,6 +29,8 @@ public Plugin:myinfo =
 #define MAX_KEY_LENGTH	    32
 #define MAX_VAL_LENGTH	    32
 
+new DAYS_OF_WEEK[]= {'\0', 'm', 't', 'w', 'r', 'f', 's', 'u'};
+
 new Handle:g_Cvar_File = INVALID_HANDLE;
 new Handle:g_Cvar_GroupsFile = INVALID_HANDLE;
 new Handle:g_Cvar_NodeKey = INVALID_HANDLE;
@@ -297,7 +299,7 @@ public Action:Command_DMR(client, args)
     decl String:val[PLATFORM_MAX_PATH];
     GetCmdArg(1, val, sizeof(val));
 
-    PrintToServer("Value=%d", CompareTimeFromString(val));
+    PrintToServer("time=%d\ndays=%d", CompareTimeFromString(val), CompareDayOfWeek(val));
 
     return Plugin_Handled;
 }
@@ -610,6 +612,20 @@ stock CompareTime(hour, minute)
     return 0;
 }
 
+/**
+    Return true if today is included in days
+*/
+stock bool:CompareDayOfWeek(const String:days[])
+{
+    decl String:tmp[16];
+
+    FormatTime(tmp, sizeof(tmp), "%u");
+    new day = StringToInt(tmp);
+    Format(tmp, sizeof(tmp), "%s", DAYS_OF_WEEK[day]);
+
+    return day > 0 && day < sizeof(DAYS_OF_WEEK) && StrContains(days, tmp) >= 0;
+}
+
 stock bool:MapConditionsAreMet(Handle:conditions)
 {
     decl String:val[MAX_VAL_LENGTH];
@@ -649,6 +665,18 @@ stock bool:MapConditionsAreMet(Handle:conditions)
     {
         KvGetString(conditions, "time_gte", val, sizeof(val));
         if(CompareTimeFromString(val) < 0 ) return false;
+    }
+
+    if(KvGetDataType(conditions, "day_eq") != KvData_None)
+    {
+        KvGetString(conditions, "day_eq", val, sizeof(val));
+        if(!CompareDayOfWeek(val)) return false;
+    }
+
+    if(KvGetDataType(conditions, "day_neq") != KvData_None)
+    {
+        KvGetString(conditions, "day_neq", val, sizeof(val));
+        if(CompareDayOfWeek(val)) return false;
     }
 
     return true;
