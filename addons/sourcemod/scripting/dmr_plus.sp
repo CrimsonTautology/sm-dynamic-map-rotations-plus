@@ -371,6 +371,7 @@ bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, 
     if(map_groups == INVALID_HANDLE) return false;
 
     decl String:group[PLATFORM_MAX_PATH];
+    new bool:found=false;
 
     KvRewind(rotation);
     if(KvJumpToKey(rotation, node_key))
@@ -385,8 +386,7 @@ bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, 
                 SetFailState("Map \"%s\" in key \"%s\" is invalid.", map, node_key);
             }
 
-            KvRewind(rotation);
-            return true;
+            found = true;
 
         }else if(KvGetString(rotation, "group", group, length, "") && strlen(group) > 0)
         {
@@ -399,31 +399,31 @@ bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, 
             }
 
 
-            KvRewind(rotation);
-            return true;
+            found = true;
         }
 
     }
 
     KvRewind(rotation);
-    return false;
+    return found;
 }
 
 bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:group[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
+    new bool:found = false;
+
     KvRewind(rotation);
     if(KvJumpToKey(rotation, node_key))
     {
         KvGetString(rotation, "group", group, length);
 
-        KvRewind(rotation);
-        return true;
+        found = true;
     }
 
     KvRewind(rotation);
-    return false;
+    return found;
 }
 
 bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_key[], length)
@@ -472,6 +472,7 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
     //Maintain a seperate calculation that checks against the map history
     new history_count = 0;
     new bool:use_history = false;
+    new bool:found = false;
 
     KvRewind(map_groups);
     KvGetSectionName(map_groups, map, length);
@@ -525,16 +526,13 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
 
         } while(KvGotoNextKey(map_groups));
 
-        KvRewind(map_groups);
-
         //Cache the selected map
         SetTrieString(g_CachedRandomMapTrie, group, map);
-
-        return true;
+        found= true;
     }
 
     KvRewind(map_groups);
-    return false;
+    return found;
 }
 
 stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
