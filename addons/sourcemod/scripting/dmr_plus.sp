@@ -112,6 +112,14 @@ public OnMapStart()
     UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
 }
 
+public OnConfigsExecuted()
+{
+    decl String:node_key[PLATFORM_MAX_PATH], String:group[PLATFORM_MAX_PATH];
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+
+    RunNodeCommands(node_key, g_Rotation);
+}
+
 public OnMapEnd()
 {
     if(!ForcedNextMap())
@@ -183,6 +191,23 @@ UpdateMapHistory(Handle:history, limit)
     {
         RemoveFromArray(history, 0);
     }	
+}
+
+RunNodeCommands(const String:node_key[], Handle:rotation)
+{
+    decl String:command[MAX_VAL_LENGTH];
+
+    KvRewind(rotation);
+    if(KvJumpToKey(rotation, node_key))
+    {
+        if(KvGetString(rotation, "command", command, sizeof(command), "") && strlen(command) > 0)
+        {
+            ServerCommand(command);
+        }
+    }
+
+    KvRewind(rotation);
+
 }
 
 public Action:Command_Nextmaps(client, args)
@@ -565,10 +590,10 @@ stock GetAdminCount()
 }
 
 /**
-    Return  1 if given time is after current time
-            0 if given time same as now
-           -1 if given time is before current time
-*/
+  Return  1 if given time is after current time
+  0 if given time same as now
+  -1 if given time is before current time
+ */
 stock CompareTimeFromString(const String:time[])
 {
     decl String:tmp[2][8];
@@ -581,10 +606,10 @@ stock CompareTimeFromString(const String:time[])
 }
 
 /**
-    Return  1 if given time is after current time
-            0 if given time same as now
-           -1 if given time is before current time
-*/
+  Return  1 if given time is after current time
+  0 if given time same as now
+  -1 if given time is before current time
+ */
 stock CompareTime(hour, minute)
 {
     decl String:tmp[16];
@@ -608,13 +633,13 @@ stock CompareTime(hour, minute)
     {
         return -1;
     }
-    
+
     return 0;
 }
 
 /**
-    Return true if today is included in days
-*/
+  Return true if today is included in days
+ */
 stock bool:CompareDayOfWeek(const String:days[])
 {
     decl String:tmp[16];
