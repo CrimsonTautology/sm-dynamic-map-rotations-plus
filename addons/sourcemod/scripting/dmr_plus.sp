@@ -84,6 +84,8 @@ public OnPluginStart()
     RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "Unset a forced next map and have DMR resume");
     RegAdminCmd("sm_nextmapnow", Command_NextmapNow, ADMFLAG_CHANGEMAP, "Force a mapchange to the determined next map right now");
 
+    RegAdminCmd("sm_dmrvalidate", Command_DMRValidate, ADMFLAG_CHANGEMAP, "Validate the DMR files");
+
     RegAdminCmd("sm_dmr", Command_DMR, ADMFLAG_CHANGEMAP, "TODO");
 
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
@@ -210,6 +212,127 @@ RunNodeCommands(const String:node_key[], Handle:rotation)
 
 }
 
+//Validate that our dmr nodes and dmr map groups are valid
+ValidateDMR(Handle:rotation, Handle:groups)
+{
+    decl String:val[MAX_VAL_LENGTH], String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
+    new Handle:nodes;
+
+    //Test that a "start" key exists in the dmr file
+    if( !(KvGetString(rotation, "start", val, sizeof(val)) && strlen(val) > 0 ) )
+    {
+        PrintToServer("[DMR] DMR File is missing a \"start\" key.");
+    }
+
+    //Test each node in the dmr file
+    KvRewind(rotation);
+    nodes = CreateKeyValues("rotation");
+    KvCopySubkeys(rotation, nodes);
+    if(KvGotoFirstSubKey(rotation))
+    {
+        do
+        {
+            KvGetSectionName(rotation, section, sizeof(section));
+
+            //Test that it has either a "map" or a "group" key
+            if( !(
+                        (KvGetString(rotation, "map", val, sizeof(val)) && strlen(val) > 0 ) ||
+                        (KvGetString(rotation, "group", val, sizeof(val)) && strlen(val) > 0 )
+                 ))
+            {
+                PrintToServer("[DMR] DMR Node \"%s\" is missing either a \"map\" or \"group\" key.", section);
+            }
+
+            //Test that it does not have both a "map" and "group" key
+            if( (KvGetString(rotation, "map", val, sizeof(val)) && strlen(val) > 0 ) &&
+                    (KvGetString(rotation, "group", val, sizeof(val)) && strlen(val) > 0 ))
+            {
+                PrintToServer("[DMR] DMR Node \"%s\" has both a \"map\" or \"group\" key.  It only needs one.", section);
+            }
+
+            //If a map; test that the map is valid
+            if( (KvGetString(rotation, "map", val, sizeof(val)) && strlen(val) > 0 ) &&
+                    !IsMapValid(val))
+            {
+                PrintToServer("[DMR] DMR Node \"%s\" has an invalid map \"%s\" in the \"map\" key.", section, val);
+            }
+
+            //If a group; test that the group is valid
+            KvRewind(groups);
+            if( (KvGetString(rotation, "group", val, sizeof(val)) && strlen(val) > 0 ) &&
+                    !KvJumpToKey(groups, val))
+            {
+                PrintToServer("[DMR] DMR Node \"%s\" has an invalid group \"%s\" in the \"group\" key.", section, val);
+            }
+
+            //Test that a "default_nextnode" key exists in the dmr file
+            if( !(KvGetString(rotation, "default_nextnode", val, sizeof(val)) && strlen(val) > 0 ) )
+            {
+                PrintToServer("[DMR] DMR Node \"%s\" is missing a \"default_nextnode\" key");
+            }
+
+            //Test that the "default_nextnode" node is an actual node in the dmr file
+            KvGetString(rotation, "default_nextnode", val, sizeof(val));
+            KvRewind(nodes);
+            if( !(KvJumpToKey(nodes, val)) )
+            {
+                PrintToServer("[DMR] The DMR Node \"%s\" in the \"default_nextnode\" key for node \"%s\" does not exist", val, section);
+            }
+
+            //For each additional node branch test that it is a valid node
+            if(KvGotoFirstSubKey(rotation))
+            {
+                do
+                {
+                    KvGetSectionName(rotation, key, sizeof(key));
+
+                    //Test that the "default_nextnode" node is an actual node in the dmr file
+                    KvRewind(nodes);
+                    if( !(KvJumpToKey(nodes, key)) )
+                    {
+                        PrintToServer("[DMR] The DMR Node \"%s\" for node \"%s\" does not exist", key, section);
+                    }
+
+                } while(KvGotoNextKey(rotation));
+            }
+            KvGoBack(rotation);
+
+
+        }while(KvGotoNextKey(rotation));
+    }
+    CloseHandle(nodes);
+
+    //Validate the map groups file
+    KvRewind(groups);
+    if(KvGotoFirstSubKey(groups))
+    {
+        do
+        {
+            KvGetSectionName(groups, section, sizeof(section));
+
+            //For each map in the group
+            if(KvGotoFirstSubKey(groups))
+            {
+                do
+                {
+                    KvGetSectionName(groups, key, sizeof(key));
+                    //Test that this map is valid
+                    if(!IsMapValid(key))
+                    {
+                        PrintToServer("[DMR] The map \"%s\" in the map group \"%s\" is invalid.", key, section);
+                    }
+
+                } while(KvGotoNextKey(groups));
+            }
+            KvGoBack(groups);
+
+
+        }while(KvGotoNextKey(groups));
+    }
+
+
+}
+
 public Action:Command_Nextmaps(client, args)
 {
     decl String:nextmaps[256], String:node_key[PLATFORM_MAX_PATH];
@@ -313,6 +436,14 @@ public Action:Command_NextmapNow(client, args)
 
     return Plugin_Handled;
 }
+
+public Action:Command_DMRValidate(client, args)
+{
+    ValidateDMR(g_Rotation, g_MapGroups);
+
+    return Plugin_Handled;
+}
+
 
 public Action:Command_DMR(client, args)
 {
