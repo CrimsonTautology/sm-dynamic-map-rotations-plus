@@ -4,7 +4,7 @@
     "10"
     {
         "map"            "cp_gravelpit"
-        "default_nextmap"    "20"
+        "default_nextnode"    "20"
         "30"
         {
             "players_lte"    "12"
@@ -14,7 +14,7 @@
     "20"
     {
         "map"            "ctf_well"
-        "default_nextmap"    "30"
+        "default_nextnode"    "30"
         "bdlnds"
         {
             "players_lte"    "10"
@@ -28,18 +28,18 @@
     "30"
     {
         "map"            "cp_dustbowl"
-        "default_nextmap"    "test"
+        "default_nextnode"    "test"
     }
 
     "test"
     {
         "group"          "low_population"
-        "default_nextmap"   "10"
+        "default_nextnode"   "10"
     }
 
     "bdlnds"
     {
         "map"            "cp_badlands"
-        "default_nextmap"    "30"
+        "default_nextnode"    "30"
     }
 }

@@ -439,7 +439,7 @@ bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_k
     }
 
     //First get the default map
-    KvGetString(rotation, "default_nextmap", next_node_key, length);
+    KvGetString(rotation, "default_nextnode", next_node_key, length);
 
     //Go through remaining subkeys, where the key name being the next group and the body being a list of custom rules
     KvRewind(rotation);
@@ -459,7 +459,7 @@ bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_k
     return true;
 }
 
-bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[], length)
+stock bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[], length, &count=0, &history_count=0, &bool:use_history=false)
 {
     if(map_groups == INVALID_HANDLE) return false;
 
@@ -467,11 +467,7 @@ bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String:map[]
     if(GetTrieString(g_CachedRandomMapTrie, group, map, length)) return true;
 
     new String:section[PLATFORM_MAX_PATH];
-    new count = 0, rand;
-
-    //Maintain a seperate calculation that checks against the map history
-    new history_count = 0;
-    new bool:use_history = false;
+    new rand;
     new bool:found = false;
 
     KvRewind(map_groups);
