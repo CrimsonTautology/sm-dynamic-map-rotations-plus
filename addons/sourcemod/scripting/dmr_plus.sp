@@ -300,7 +300,20 @@ ValidateDMR(Handle:rotation, Handle:groups)
     }
     CloseHandle(nodes);
 
-    //Validate the map groups file
+    ValidateMapGroups(groups);
+
+
+}
+
+ValidateNodeList()
+{
+}
+
+//Validate the map groups file
+ValidateMapGroups(Handle:groups)
+{
+    decl String:val[MAX_VAL_LENGTH], String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
+
     KvRewind(groups);
     if(KvGotoFirstSubKey(groups))
     {
@@ -327,8 +340,6 @@ ValidateDMR(Handle:rotation, Handle:groups)
 
         }while(KvGotoNextKey(groups));
     }
-
-
 }
 
 public Action:Command_Nextmaps(client, args)
