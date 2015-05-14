@@ -213,6 +213,13 @@ RunNodeCommands(const String:node_key[], Handle:rotation)
 //Validate that our dmr nodes and dmr map groups are valid
 ValidateDMR(Handle:rotation, Handle:groups)
 {
+    ValidateNodeList(rotation, groups);
+    ValidateMapGroups(groups);
+}
+
+//Test each node in the dmr file
+ValidateNodeList(Handle:rotation, Handle:groups)
+{
     decl String:val[MAX_VAL_LENGTH], String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
     new Handle:nodes;
 
@@ -222,7 +229,6 @@ ValidateDMR(Handle:rotation, Handle:groups)
         PrintToServer("[DMR] DMR File is missing a \"start\" key.");
     }
 
-    //Test each node in the dmr file
     KvRewind(rotation);
     nodes = CreateKeyValues("rotation");
     KvCopySubkeys(rotation, nodes);
@@ -299,14 +305,6 @@ ValidateDMR(Handle:rotation, Handle:groups)
         }while(KvGotoNextKey(rotation));
     }
     CloseHandle(nodes);
-
-    ValidateMapGroups(groups);
-
-
-}
-
-ValidateNodeList()
-{
 }
 
 //Validate the map groups file
