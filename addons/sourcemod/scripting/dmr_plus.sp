@@ -86,8 +86,6 @@ public OnPluginStart()
 
     RegAdminCmd("sm_dmrvalidate", Command_DMRValidate, ADMFLAG_CHANGEMAP, "Validate the DMR files");
 
-    RegAdminCmd("sm_dmr", Command_DMR, ADMFLAG_CHANGEMAP, "TODO");
-
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
     g_CachedRandomMapTrie = CreateTrie();
 }
@@ -440,22 +438,6 @@ public Action:Command_NextmapNow(client, args)
 public Action:Command_DMRValidate(client, args)
 {
     ValidateDMR(g_Rotation, g_MapGroups);
-
-    return Plugin_Handled;
-}
-
-
-public Action:Command_DMR(client, args)
-{
-    if (args < 1)
-    {
-        return Plugin_Handled;
-    }
-
-    decl String:val[PLATFORM_MAX_PATH];
-    GetCmdArg(1, val, sizeof(val));
-
-    PrintToServer("time=%d\ndays=%d", CompareTimeFromString(val), CompareDayOfWeek(val));
 
     return Plugin_Handled;
 }
