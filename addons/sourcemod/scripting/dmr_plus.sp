@@ -778,51 +778,47 @@ stock bool:MapConditionsAreMet(Handle:conditions)
     decl String:val[MAX_VAL_LENGTH];
     new count;
 
-    if(KvGetDataType(conditions, "players_lte") != KvData_None)
+    if(KvExists(conditions, "players_lte"))
     {
         count = KvGetNum(conditions, "players_lte");
         if(!(GetPlayerCount() <= count)) return false;
     }
 
-    if(KvGetDataType(conditions, "players_gte") != KvData_None)
+    if(KvExists(conditions, "players_gte"))
     {
         count = KvGetNum(conditions, "players_gte");
         if(!(GetPlayerCount() >= count)) return false;
     }
 
-    if(KvGetDataType(conditions, "admins_lte") != KvData_None)
+    if(KvExists(conditions, "admins_lte"))
     {
         count = KvGetNum(conditions, "admins_lte");
         if(!(GetPlayerCount() <= count)) return false;
     }
 
-    if(KvGetDataType(conditions, "admins_gte") != KvData_None)
+    if(KvExists(conditions, "admins_gte"))
     {
         count = KvGetNum(conditions, "admins_gte");
         if(!(GetPlayerCount() >= count)) return false;
     }
 
-    if(KvGetDataType(conditions, "time_lte") != KvData_None)
+    if(KvExists2(conditions, "time_lte", val, sizeof(val)))
     {
-        KvGetString(conditions, "time_lte", val, sizeof(val));
         if(CompareTimeFromString(val) > 0 ) return false;
     }
 
-    if(KvGetDataType(conditions, "time_gte") != KvData_None)
+    if(KvExists2(conditions, "time_gte", val, sizeof(val)))
     {
-        KvGetString(conditions, "time_gte", val, sizeof(val));
         if(CompareTimeFromString(val) < 0 ) return false;
     }
 
-    if(KvGetDataType(conditions, "day_eq") != KvData_None)
+    if(KvExists2(conditions, "day_eq", val, sizeof(val)))
     {
-        KvGetString(conditions, "day_eq", val, sizeof(val));
         if(!CompareDayOfWeek(val)) return false;
     }
 
-    if(KvGetDataType(conditions, "day_neq") != KvData_None)
+    if(KvExists2(conditions, "day_neq", val, sizeof(val)))
     {
-        KvGetString(conditions, "day_neq", val, sizeof(val));
         if(CompareDayOfWeek(val)) return false;
     }
 
