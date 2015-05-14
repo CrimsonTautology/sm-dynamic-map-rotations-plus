@@ -340,7 +340,7 @@ public Action:Command_Nextmaps(client, args)
     decl String:map[PLATFORM_MAX_PATH];
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
-    new Handle:maps = GetNextMaps(node_key, 5);
+    new Handle:maps = GetNextMaps(node_key, 7);
 
     Format(nextmaps, sizeof(nextmaps), "Next Maps:");
     new count = GetArraySize(maps);
@@ -368,7 +368,7 @@ public Action:Command_Nextnodes(client, args)
     decl String:map[PLATFORM_MAX_PATH];
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
-    new Handle:maps = GetNextMaps(node_key, 10, true);
+    new Handle:maps = GetNextMaps(node_key, 15, true);
 
     Format(nextmaps, sizeof(nextmaps), "Next Nodes:");
     new count = GetArraySize(maps);
@@ -545,9 +545,7 @@ stock bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:grou
     KvRewind(rotation);
     if(KvJumpToKey(rotation, node_key))
     {
-        KvGetString(rotation, "group", group, length);
-
-        found = true;
+        found = KvExists2(rotation, "group", group, length);
     }
 
     KvRewind(rotation);
@@ -662,6 +660,8 @@ stock bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String
 stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
 {
     new Handle:maps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
+    new Handle:visited_groups = CreateTrie();
+    new junk;
     decl String:current_key[MAX_KEY_LENGTH], String:next_key[MAX_KEY_LENGTH], String:map[PLATFORM_MAX_PATH];
 
     //Start with node_key
@@ -671,11 +671,29 @@ stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
     for(new i = 0; i < ammount; i++)
     {
         GetNextNodeKey(current_key, g_Rotation, next_key, sizeof(next_key));
-        GetMapFromKey(next_key, g_Rotation, g_MapGroups, map, sizeof(map));
+
+        //NOTE:  This is to handle the case where multiple of the same map group
+        //appear in a row.  We cache the randomized result so it is impossible 
+        //to know what the random map will be past the first iteration.  Instead
+        //we simply display the map group past the first iteration.
+        if(GetGroupFromKey(next_key, g_Rotation, map, sizeof(map)))
+        {
+            if(!GetTrieValue(visited_groups, map, junk))
+            {
+                //We've never visted this group so we're good to get the map name and cache it
+                SetTrieValue(visited_groups, map, 1);
+                GetMapFromKey(next_key, g_Rotation, g_MapGroups, map, sizeof(map));
+            }
+        }else{
+            GetMapFromKey(next_key, g_Rotation, g_MapGroups, map, sizeof(map));
+        }
         strcopy(current_key, sizeof(current_key), next_key);
 
+        //Push the current_key if we're only returning keys; else push the map name
         PushArrayString(maps, keys ? current_key : map);
     }
+
+    CloseHandle(visited_groups);
 
     return maps;
 }
