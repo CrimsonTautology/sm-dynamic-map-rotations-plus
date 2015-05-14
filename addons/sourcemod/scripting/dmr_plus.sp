@@ -83,6 +83,7 @@ public OnPluginStart()
     RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "Unset a forced next map and have DMR resume");
     RegAdminCmd("sm_nextmapnow", Command_NextmapNow, ADMFLAG_CHANGEMAP, "Force a mapchange to the determined next map right now");
 
+    RegAdminCmd("sm_reloaddmr", Command_ReloadDMR, ADMFLAG_CHANGEMAP, "Reload the DMR files");
     RegAdminCmd("sm_validatedmr", Command_ValidateDMR, ADMFLAG_CHANGEMAP, "Validate the DMR files");
 
     g_MapHistoryArray = CreateArray(ByteCountToCells(MAX_KEY_LENGTH));
@@ -98,6 +99,9 @@ public OnMapStart()
 
     LoadDMRFile(file, node_key, g_Rotation);
     LoadDMRGroupsFile(groups_file, g_MapGroups);
+
+    ValidateNodeList(g_Rotation, g_MapGroups);
+    ValidateMapGroups(g_MapGroups);
 
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
@@ -426,6 +430,22 @@ public Action:Command_NextmapNow(client, args)
     decl String:map[MAX_KEY_LENGTH];
     GetNextMap(map, sizeof(map));
     ForceChangeLevel(map, "sm_nextmapnow Command");
+
+    return Plugin_Handled;
+}
+
+public Action:Command_ReloadDMR(client, args)
+{
+    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[MAX_KEY_LENGTH], String:group[MAX_KEY_LENGTH];
+    GetConVarString(g_Cvar_File, file, sizeof(file));
+    GetConVarString(g_Cvar_GroupsFile, groups_file, sizeof(groups_file));
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+
+    LoadDMRFile(file, node_key, g_Rotation);
+    LoadDMRGroupsFile(groups_file, g_MapGroups);
+
+    ValidateNodeList(g_Rotation, g_MapGroups);
+    ValidateMapGroups(g_MapGroups);
 
     return Plugin_Handled;
 }
