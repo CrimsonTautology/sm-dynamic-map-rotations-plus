@@ -470,8 +470,7 @@ UpdateNextMap()
 //Tests if a key value exists and puts the value into val
 stock bool:KvExists(Handle:kv, const String:key[])
 {
-    decl String:val[MAX_VAL_LENGTH];
-    return KvGetString(kv, key, val, sizeof(val), "") && strlen(val) > 0;
+    return KvGetDataType(kv, key) != KvData_None;
 }
 
 //Same as KvExists but also save val
