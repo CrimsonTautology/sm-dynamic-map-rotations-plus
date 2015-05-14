@@ -209,13 +209,6 @@ RunNodeCommands(const String:node_key[], Handle:rotation)
 
 }
 
-//Validate that our dmr nodes and dmr map groups are valid
-ValidateDMR(Handle:rotation, Handle:groups)
-{
-    ValidateNodeList(rotation, groups);
-    ValidateMapGroups(groups);
-}
-
 //Test each node in the dmr file
 ValidateNodeList(Handle:rotation, Handle:groups)
 {
@@ -439,7 +432,8 @@ public Action:Command_NextmapNow(client, args)
 
 public Action:Command_ValidateDMR(client, args)
 {
-    ValidateDMR(g_Rotation, g_MapGroups);
+    ValidateNodeList(g_Rotation, g_MapGroups);
+    ValidateMapGroups(g_MapGroups);
 
     return Plugin_Handled;
 }
