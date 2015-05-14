@@ -27,7 +27,6 @@ public Plugin:myinfo =
 };
 
 #define MAX_KEY_LENGTH	    32
-#define MAX_VAL_LENGTH	    32
 
 new DAYS_OF_WEEK[]= {'\0', 'm', 't', 'w', 'r', 'f', 's', 'u'};
 
@@ -41,7 +40,7 @@ new Handle:g_MapGroups = INVALID_HANDLE;
 
 new bool:g_ForceNextMap = false;
 
-new String:g_CachedNextNodeKey[PLATFORM_MAX_PATH];
+new String:g_CachedNextNodeKey[MAX_KEY_LENGTH];
 new Handle:g_CachedRandomMapTrie = INVALID_HANDLE;
 new Handle:g_MapHistoryArray = INVALID_HANDLE;
 
@@ -86,13 +85,13 @@ public OnPluginStart()
 
     RegAdminCmd("sm_validatedmr", Command_ValidateDMR, ADMFLAG_CHANGEMAP, "Validate the DMR files");
 
-    g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
+    g_MapHistoryArray = CreateArray(ByteCountToCells(MAX_KEY_LENGTH));
     g_CachedRandomMapTrie = CreateTrie();
 }
 
 public OnMapStart()
 {
-    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[PLATFORM_MAX_PATH], String:group[PLATFORM_MAX_PATH];
+    decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[MAX_KEY_LENGTH], String:group[MAX_KEY_LENGTH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_GroupsFile, groups_file, sizeof(groups_file));
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
@@ -114,7 +113,7 @@ public OnMapStart()
 
 public OnConfigsExecuted()
 {
-    decl String:node_key[PLATFORM_MAX_PATH];
+    decl String:node_key[MAX_KEY_LENGTH];
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
 
     RunNodeCommands(node_key, g_Rotation);
@@ -131,7 +130,7 @@ public OnMapEnd()
 
 LoadDMRFile(String:file[], String:node_key[], &Handle:rotation)
 {
-    decl String:path[PLATFORM_MAX_PATH], String:val[MAX_VAL_LENGTH];
+    decl String:path[PLATFORM_MAX_PATH], String:val[MAX_KEY_LENGTH];
     BuildPath(Path_SM, path, sizeof(path), file);
     if(rotation != INVALID_HANDLE) CloseHandle(rotation);
 
@@ -183,7 +182,7 @@ LoadDMRGroupsFile(const String:file[], &Handle:map_groups)
 
 UpdateMapHistory(Handle:history, limit)
 {
-    decl String:map[PLATFORM_MAX_PATH];
+    decl String:map[MAX_KEY_LENGTH];
     GetCurrentMap(map, sizeof(map));
     PushArrayString(history, map);
 
@@ -195,7 +194,7 @@ UpdateMapHistory(Handle:history, limit)
 
 RunNodeCommands(const String:node_key[], Handle:rotation)
 {
-    decl String:command[MAX_VAL_LENGTH];
+    decl String:command[MAX_KEY_LENGTH];
 
     KvRewind(rotation);
     if(KvJumpToKey(rotation, node_key))
@@ -220,7 +219,7 @@ ValidateDMR(Handle:rotation, Handle:groups)
 //Test each node in the dmr file
 ValidateNodeList(Handle:rotation, Handle:groups)
 {
-    decl String:val[MAX_VAL_LENGTH], String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
+    decl String:val[MAX_KEY_LENGTH], String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
     new Handle:nodes;
 
     //Test that a "start" key exists in the dmr file
@@ -336,8 +335,8 @@ ValidateMapGroups(Handle:groups)
 
 public Action:Command_Nextmaps(client, args)
 {
-    decl String:nextmaps[256], String:node_key[PLATFORM_MAX_PATH];
-    decl String:map[PLATFORM_MAX_PATH];
+    decl String:nextmaps[256], String:node_key[MAX_KEY_LENGTH];
+    decl String:map[MAX_KEY_LENGTH];
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
     new Handle:maps = GetNextMaps(node_key, 7);
@@ -364,8 +363,8 @@ public Action:Command_Nextmaps(client, args)
 
 public Action:Command_Nextnodes(client, args)
 {
-    decl String:nextmaps[256], String:node_key[PLATFORM_MAX_PATH];
-    decl String:map[PLATFORM_MAX_PATH];
+    decl String:nextmaps[256], String:node_key[MAX_KEY_LENGTH];
+    decl String:map[MAX_KEY_LENGTH];
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
     new Handle:maps = GetNextMaps(node_key, 15, true);
@@ -398,7 +397,7 @@ public Action:Command_SetNextmap(client, args)
         return Plugin_Handled;
     }
 
-    decl String:map[PLATFORM_MAX_PATH];
+    decl String:map[MAX_KEY_LENGTH];
     GetCmdArg(1, map, sizeof(map));
 
     if (!IsMapValid(map))
@@ -431,7 +430,7 @@ public Action:Command_UnsetNextmap(client, args)
 
 public Action:Command_NextmapNow(client, args)
 {
-    decl String:map[PLATFORM_MAX_PATH];
+    decl String:map[MAX_KEY_LENGTH];
     GetNextMap(map, sizeof(map));
     ForceChangeLevel(map, "sm_nextmapnow Command");
 
@@ -498,7 +497,7 @@ stock bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_gr
     if(rotation == INVALID_HANDLE) return false;
     if(map_groups == INVALID_HANDLE) return false;
 
-    decl String:group[PLATFORM_MAX_PATH];
+    decl String:group[MAX_KEY_LENGTH];
     new bool:found=false;
 
     KvRewind(rotation);
@@ -592,7 +591,7 @@ stock bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String
     //We only need to do a randomization once, see if we have a cached value
     if(GetTrieString(g_CachedRandomMapTrie, group, map, length)) return true;
 
-    new String:section[PLATFORM_MAX_PATH];
+    new String:section[MAX_KEY_LENGTH];
     new rand;
     new bool:found = false;
 
@@ -659,10 +658,10 @@ stock bool:GetRandomMapFromGroup(const String:group[], Handle:map_groups, String
 
 stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
 {
-    new Handle:maps = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
+    new Handle:maps = CreateArray(ByteCountToCells(MAX_KEY_LENGTH));
     new Handle:visited_groups = CreateTrie();
     new junk;
-    decl String:current_key[MAX_KEY_LENGTH], String:next_key[MAX_KEY_LENGTH], String:map[PLATFORM_MAX_PATH];
+    decl String:current_key[MAX_KEY_LENGTH], String:next_key[MAX_KEY_LENGTH], String:map[MAX_KEY_LENGTH];
 
     //Start with node_key
     strcopy(current_key, sizeof(current_key), node_key);
@@ -793,7 +792,7 @@ stock bool:CompareDayOfWeek(const String:days[])
 
 stock bool:MapConditionsAreMet(Handle:conditions)
 {
-    decl String:val[MAX_VAL_LENGTH];
+    decl String:val[MAX_KEY_LENGTH];
     new count;
 
     if(KvExists(conditions, "players_lte"))
