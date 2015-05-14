@@ -84,7 +84,7 @@ public OnPluginStart()
     RegAdminCmd("sm_unsetnextmap", Command_UnsetNextmap, ADMFLAG_CHANGEMAP, "Unset a forced next map and have DMR resume");
     RegAdminCmd("sm_nextmapnow", Command_NextmapNow, ADMFLAG_CHANGEMAP, "Force a mapchange to the determined next map right now");
 
-    RegAdminCmd("sm_dmrvalidate", Command_DMRValidate, ADMFLAG_CHANGEMAP, "Validate the DMR files");
+    RegAdminCmd("sm_validatedmr", Command_ValidateDMR, ADMFLAG_CHANGEMAP, "Validate the DMR files");
 
     g_MapHistoryArray = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
     g_CachedRandomMapTrie = CreateTrie();
@@ -438,7 +438,7 @@ public Action:Command_NextmapNow(client, args)
     return Plugin_Handled;
 }
 
-public Action:Command_DMRValidate(client, args)
+public Action:Command_ValidateDMR(client, args)
 {
     ValidateDMR(g_Rotation, g_MapGroups);
 
