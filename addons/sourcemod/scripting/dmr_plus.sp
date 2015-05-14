@@ -200,7 +200,7 @@ RunNodeCommands(const String:node_key[], Handle:rotation)
     KvRewind(rotation);
     if(KvJumpToKey(rotation, node_key))
     {
-        if(KvGetString(rotation, "command", command, sizeof(command), "") && strlen(command) > 0)
+        if(KvExists2(rotation, "command", command, sizeof(command)))
         {
             ServerCommand(command);
         }
@@ -224,7 +224,7 @@ ValidateNodeList(Handle:rotation, Handle:groups)
     new Handle:nodes;
 
     //Test that a "start" key exists in the dmr file
-    if( !(KvGetString(rotation, "start", val, sizeof(val)) && strlen(val) > 0 ) )
+    if( !KvExists(rotation, "start") )
     {
         PrintToServer("[DMR] DMR File is missing a \"start\" key.");
     }
@@ -239,38 +239,32 @@ ValidateNodeList(Handle:rotation, Handle:groups)
             KvGetSectionName(rotation, section, sizeof(section));
 
             //Test that it has either a "map" or a "group" key
-            if( !(
-                        (KvGetString(rotation, "map", val, sizeof(val)) && strlen(val) > 0 ) ||
-                        (KvGetString(rotation, "group", val, sizeof(val)) && strlen(val) > 0 )
-                 ))
+            if( !(KvExists(rotation, "map") || KvExists(rotation, "group")) )
             {
                 PrintToServer("[DMR] DMR Node \"%s\" is missing either a \"map\" or \"group\" key.", section);
             }
 
             //Test that it does not have both a "map" and "group" key
-            if( (KvGetString(rotation, "map", val, sizeof(val)) && strlen(val) > 0 ) &&
-                    (KvGetString(rotation, "group", val, sizeof(val)) && strlen(val) > 0 ))
+            if( (KvExists(rotation, "map") && KvExists(rotation, "group")) )
             {
                 PrintToServer("[DMR] DMR Node \"%s\" has both a \"map\" or \"group\" key.  It only needs one.", section);
             }
 
             //If a map; test that the map is valid
-            if( (KvGetString(rotation, "map", val, sizeof(val)) && strlen(val) > 0 ) &&
-                    !IsMapValid(val))
+            if( KvExists2(rotation, "map", val, sizeof(val)) && !IsMapValid(val) )
             {
                 PrintToServer("[DMR] DMR Node \"%s\" has an invalid map \"%s\" in the \"map\" key.", section, val);
             }
 
             //If a group; test that the group is valid
             KvRewind(groups);
-            if( (KvGetString(rotation, "group", val, sizeof(val)) && strlen(val) > 0 ) &&
-                    !KvJumpToKey(groups, val))
+            if( KvExists2(rotation, "group", val, sizeof(val)) && !KvJumpToKey(groups, val) )
             {
                 PrintToServer("[DMR] DMR Node \"%s\" has an invalid group \"%s\" in the \"group\" key.", section, val);
             }
 
             //Test that a "default_nextnode" key exists in the dmr file
-            if( !(KvGetString(rotation, "default_nextnode", val, sizeof(val)) && strlen(val) > 0 ) )
+            if( !KvExists(rotation, "default_nextnode") )
             {
                 PrintToServer("[DMR] DMR Node \"%s\" is missing a \"default_nextnode\" key");
             }
@@ -474,9 +468,16 @@ UpdateNextMap()
 }
 
 //Tests if a key value exists and puts the value into val
-stock bool:KvExists(Handle:kv, const String:key[], String:val[], length)
+stock bool:KvExists(Handle:kv, const String:key[])
 {
-    return KvGetString(kv, key, val, length) && strlen(val) > 0;
+    decl String:val[MAX_VAL_LENGTH];
+    return KvGetString(kv, key, val, sizeof(val), "") && strlen(val) > 0;
+}
+
+//Same as KvExists but also save val
+stock bool:KvExists2(Handle:kv, const String:key[], String:val[], length)
+{
+    return KvGetString(kv, key, val, length, "") && strlen(val) > 0;
 }
 
 stock bool:ForcedNextMap()
@@ -504,7 +505,7 @@ stock bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_gr
     KvRewind(rotation);
     if(KvJumpToKey(rotation, node_key))
     {
-        if(KvGetString(rotation, "map", map, length, "") && strlen(map) > 0)
+        if(KvExists2(rotation, "map", map, length))
         {
             //First check for "map" key
             //Throw error if map is not valid
@@ -516,7 +517,7 @@ stock bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_gr
 
             found = true;
 
-        }else if(KvGetString(rotation, "group", group, length, "") && strlen(group) > 0)
+        }else if(KvExists2(rotation, "group", group, length))
         {
             //Then check for "group" key
             //Throw error if group is not valid
