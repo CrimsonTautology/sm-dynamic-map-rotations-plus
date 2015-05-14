@@ -473,7 +473,13 @@ UpdateNextMap()
     SetNextMap(nextmap);
 }
 
-bool:ForcedNextMap()
+//Tests if a key value exists and puts the value into val
+stock bool:KvExists(Handle:kv, const String:key[], String:val[], length)
+{
+    return KvGetString(kv, key, val, length) && strlen(val) > 0;
+}
+
+stock bool:ForcedNextMap()
 {
     return g_ForceNextMap;
 }
@@ -481,13 +487,13 @@ bool:ForcedNextMap()
 //TODO:  I don't know how sourcemod arrays are implemented and
 //FindStringInArray may be O(n).  It may be better to maintain a seperate
 //existance trie to check against to be more efficient.
-bool:MapWasRecentlyPlayed(String:map[])
+stock bool:MapWasRecentlyPlayed(String:map[])
 {
     return FindStringInArray(g_MapHistoryArray, map) >= 0;
 }
 
 
-bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, String:map[], length)
+stock bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, String:map[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
     if(map_groups == INVALID_HANDLE) return false;
@@ -530,7 +536,7 @@ bool:GetMapFromKey(const String:node_key[], Handle:rotation, Handle:map_groups, 
     return found;
 }
 
-bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:group[], length)
+stock bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:group[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
@@ -548,7 +554,7 @@ bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:group[], l
     return found;
 }
 
-bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_key[], length)
+stock bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_key[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
 
