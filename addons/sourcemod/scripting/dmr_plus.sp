@@ -262,7 +262,7 @@ ValidateNodeList(Handle:rotation, Handle:groups)
             //Test that a "default_nextnode" key exists in the dmr file
             if( !KvExists(rotation, "default_nextnode") )
             {
-                LogMessage("DMR Node \"%s\" is missing a \"default_nextnode\" key.");
+                LogMessage("DMR Node \"%s\" is missing a \"default_nextnode\" key.", section);
             }
 
             //Test that the "default_nextnode" node is an actual node in the dmr file
@@ -835,12 +835,12 @@ stock bool:MapConditionsAreMet(Handle:conditions)
 
     if(KvExists2(conditions, "time_lte", val, sizeof(val)))
     {
-        if(CompareTimeFromString(val) > 0 ) return false;
+        if(CompareTimeFromString(val) <= 0 ) return false;
     }
 
     if(KvExists2(conditions, "time_gte", val, sizeof(val)))
     {
-        if(CompareTimeFromString(val) < 0 ) return false;
+        if(CompareTimeFromString(val) >= 0 ) return false;
     }
 
     if(KvExists2(conditions, "day_eq", val, sizeof(val)))
