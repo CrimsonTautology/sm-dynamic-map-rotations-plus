@@ -114,7 +114,7 @@ public OnMapStart()
 
 public OnConfigsExecuted()
 {
-    decl String:node_key[PLATFORM_MAX_PATH], String:group[PLATFORM_MAX_PATH];
+    decl String:node_key[PLATFORM_MAX_PATH];
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
 
     RunNodeCommands(node_key, g_Rotation);
@@ -304,7 +304,7 @@ ValidateNodeList(Handle:rotation, Handle:groups)
 //Validate the map groups file
 ValidateMapGroups(Handle:groups)
 {
-    decl String:val[MAX_VAL_LENGTH], String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
+    decl String:key[MAX_KEY_LENGTH], String:section[MAX_KEY_LENGTH];
 
     KvRewind(groups);
     if(KvGotoFirstSubKey(groups))
@@ -457,7 +457,7 @@ public Action:Timer_UpdateNextMap(Handle:timer)
 
 UpdateNextMap()
 {
-    decl String:node_key[MAX_KEY_LENGTH], String:nextmap[MAX_KEY_LENGTH], String:next_node_key[MAX_KEY_LENGTH];
+    decl String:node_key[MAX_KEY_LENGTH], String:nextmap[MAX_KEY_LENGTH];
 
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
 
