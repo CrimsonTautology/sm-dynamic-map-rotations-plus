@@ -237,32 +237,32 @@ ValidateNodeList(Handle:rotation, Handle:groups)
             //Test that it has either a "map" or a "group" key
             if( !(KvExists(rotation, "map") || KvExists(rotation, "group")) )
             {
-                PrintToServer("[DMR] DMR Node \"%s\" is missing either a \"map\" or \"group\" key.", section);
+                LogMessage("DMR Node \"%s\" is missing either a \"map\" or \"group\" key.", section);
             }
 
             //Test that it does not have both a "map" and "group" key
             if( (KvExists(rotation, "map") && KvExists(rotation, "group")) )
             {
-                PrintToServer("[DMR] DMR Node \"%s\" has both a \"map\" or \"group\" key.  It only needs one.", section);
+                LogMessage("DMR Node \"%s\" has both a \"map\" and \"group\" key.  It only needs one.", section);
             }
 
             //If a map; test that the map is valid
             if( KvExists2(rotation, "map", val, sizeof(val)) && !IsMapValid(val) )
             {
-                PrintToServer("[DMR] DMR Node \"%s\" has an invalid map \"%s\" in the \"map\" key.", section, val);
+                LogMessage("DMR Node \"%s\" has a \"map\" key that points to a map that does not exist on the server. (\"%s\")", section, val);
             }
 
             //If a group; test that the group is valid
             KvRewind(groups);
             if( KvExists2(rotation, "group", val, sizeof(val)) && !KvJumpToKey(groups, val) )
             {
-                PrintToServer("[DMR] DMR Node \"%s\" has an invalid group \"%s\" in the \"group\" key.", section, val);
+                LogMessage("DMR Node \"%s\" has a \"group\" key that points to a map group that does not exist. (\"%s\")", section, val);
             }
 
             //Test that a "default_nextnode" key exists in the dmr file
             if( !KvExists(rotation, "default_nextnode") )
             {
-                PrintToServer("[DMR] DMR Node \"%s\" is missing a \"default_nextnode\" key");
+                LogMessage("DMR Node \"%s\" is missing a \"default_nextnode\" key.");
             }
 
             //Test that the "default_nextnode" node is an actual node in the dmr file
@@ -270,7 +270,7 @@ ValidateNodeList(Handle:rotation, Handle:groups)
             KvRewind(nodes);
             if( !(KvJumpToKey(nodes, val)) )
             {
-                PrintToServer("[DMR] The DMR Node \"%s\" in the \"default_nextnode\" key for node \"%s\" does not exist", val, section);
+                LogMessage("The DMR Node \"%s\" has a \"default_nextnode\" key that points to a node that does not exist. (\"%s\")", val, section);
             }
 
             //For each additional node branch test that it is a valid node
@@ -284,7 +284,7 @@ ValidateNodeList(Handle:rotation, Handle:groups)
                     KvRewind(nodes);
                     if( !(KvJumpToKey(nodes, key)) )
                     {
-                        PrintToServer("[DMR] The DMR Node \"%s\" for node \"%s\" does not exist", key, section);
+                        LogMessage("The DMR Node \"%s\" has a conditional branching node that does not exist. (\"%s\")", key, section);
                     }
 
                 } while(KvGotoNextKey(rotation));
@@ -318,7 +318,7 @@ ValidateMapGroups(Handle:groups)
                     //Test that this map is valid
                     if(!IsMapValid(key))
                     {
-                        PrintToServer("[DMR] The map \"%s\" in the map group \"%s\" is invalid.", key, section);
+                        LogMessage("The map \"%s\" in the map group \"%s\" does not exist on this server.", key, section);
                     }
 
                 } while(KvGotoNextKey(groups));
