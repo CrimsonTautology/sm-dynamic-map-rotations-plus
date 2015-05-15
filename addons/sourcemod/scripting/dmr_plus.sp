@@ -115,7 +115,7 @@ public OnMapStart()
     UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
 }
 
-public OnConfigsExecuted()
+public OnAutoConfigsBuffered()
 {
     decl String:node_key[MAX_KEY_LENGTH];
     GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
