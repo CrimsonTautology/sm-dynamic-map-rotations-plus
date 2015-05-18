@@ -113,6 +113,9 @@ public OnMapStart()
 
     //Save this map in the map history array
     UpdateMapHistory(g_MapHistoryArray, GetConVarInt(g_Cvar_ExcludeMaps));
+
+    //Initialize a nextmap
+    UpdateNextMap();
 }
 
 public OnAutoConfigsBuffered()
