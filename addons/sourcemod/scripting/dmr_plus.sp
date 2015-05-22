@@ -450,6 +450,11 @@ public Action:Command_ReloadDMR(client, args)
     ValidateNodeList(g_Rotation, g_MapGroups);
     ValidateMapGroups(g_MapGroups);
 
+    if(g_CachedRandomMapTrie != INVALID_HANDLE) CloseHandle(g_CachedRandomMapTrie);
+    g_CachedRandomMapTrie = CreateTrie();
+
+    UpdateNextMap();
+
     return Plugin_Handled;
 }
 
