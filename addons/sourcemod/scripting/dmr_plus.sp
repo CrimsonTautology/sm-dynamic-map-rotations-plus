@@ -333,60 +333,25 @@ ValidateMapGroups(Handle:groups)
     }
 }
 
+//saying "nextmaps" is more intuitive than "!nextmaps" due to "nextmap" being registered already
+public OnClientSayCommand_Post(client, const String:command[], const String:sArgs[])
+{
+    if (strcmp(sArgs, "nextmaps", false) == 0)
+    {
+        PrintNextMaps();
+    }
+}
+
+
+
 public Action:Command_Nextmaps(client, args)
 {
-    decl String:nextmaps[256], String:node_key[MAX_KEY_LENGTH];
-    decl String:map[MAX_KEY_LENGTH];
-
-    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
-    new Handle:maps = GetNextMaps(node_key, 7);
-
-    Format(nextmaps, sizeof(nextmaps), "Next Maps:");
-    new count = GetArraySize(maps);
-    for (new i = 0; i < count; i++)
-    {
-        GetArrayString(maps, i, map, sizeof(map));
-        if (i > 0)
-        {
-            Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
-        }
-        else
-        {
-            Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
-        }
-    }
-    CloseHandle(maps);
-
-    PrintToChatAll(nextmaps);
-    PrintToConsole(0, nextmaps);
+    PrintNextMaps();
 }
 
 public Action:Command_Nextnodes(client, args)
 {
-    decl String:nextmaps[256], String:node_key[MAX_KEY_LENGTH];
-    decl String:map[MAX_KEY_LENGTH];
-
-    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
-    new Handle:maps = GetNextMaps(node_key, 15, true);
-
-    Format(nextmaps, sizeof(nextmaps), "Next Nodes:");
-    new count = GetArraySize(maps);
-    for (new i = 0; i < count; i++)
-    {
-        GetArrayString(maps, i, map, sizeof(map));
-        if (i > 0)
-        {
-            Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
-        }
-        else
-        {
-            Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
-        }
-    }
-    CloseHandle(maps);
-
-    PrintToChatAll(nextmaps);
-    PrintToConsole(0, nextmaps);
+    PrintNextNodes();
 }
 
 public Action:Command_SetNextmap(client, args)
@@ -717,6 +682,62 @@ stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
     CloseHandle(visited_groups);
 
     return maps;
+}
+
+stock PrintNextMaps()
+{
+    decl String:nextmaps[256], String:node_key[MAX_KEY_LENGTH];
+    decl String:map[MAX_KEY_LENGTH];
+
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+    new Handle:maps = GetNextMaps(node_key, 7);
+
+    Format(nextmaps, sizeof(nextmaps), "Next Maps:");
+    new count = GetArraySize(maps);
+    for (new i = 0; i < count; i++)
+    {
+        GetArrayString(maps, i, map, sizeof(map));
+        if (i > 0)
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
+        }
+        else
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
+        }
+    }
+    CloseHandle(maps);
+
+    PrintToChatAll(nextmaps);
+    PrintToConsole(0, nextmaps);
+}
+
+stock PrintNextNodes()
+{
+    decl String:nextmaps[256], String:node_key[MAX_KEY_LENGTH];
+    decl String:map[MAX_KEY_LENGTH];
+
+    GetConVarString(g_Cvar_NodeKey, node_key, sizeof(node_key));
+    new Handle:maps = GetNextMaps(node_key, 15, true);
+
+    Format(nextmaps, sizeof(nextmaps), "Next Nodes:");
+    new count = GetArraySize(maps);
+    for (new i = 0; i < count; i++)
+    {
+        GetArrayString(maps, i, map, sizeof(map));
+        if (i > 0)
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
+        }
+        else
+        {
+            Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
+        }
+    }
+    CloseHandle(maps);
+
+    PrintToChatAll(nextmaps);
+    PrintToConsole(0, nextmaps);
 }
 
 stock GetPlayerCount()
