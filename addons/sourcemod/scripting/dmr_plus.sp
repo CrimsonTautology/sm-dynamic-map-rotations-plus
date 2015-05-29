@@ -92,6 +92,10 @@ public OnPluginStart()
 
 public OnMapStart()
 {
+    //reset globals
+    g_ForceNextMap = false;
+
+    //Reload DMR files
     decl String:file[PLATFORM_MAX_PATH], String:groups_file[PLATFORM_MAX_PATH], String:node_key[MAX_KEY_LENGTH], String:group[MAX_KEY_LENGTH];
     GetConVarString(g_Cvar_File, file, sizeof(file));
     GetConVarString(g_Cvar_GroupsFile, groups_file, sizeof(groups_file));
@@ -103,6 +107,7 @@ public OnMapStart()
     ValidateNodeList(g_Rotation, g_MapGroups);
     ValidateMapGroups(g_MapGroups);
 
+    //Setup repeating timer
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
     //Remove current map group from our random map trie cache
@@ -116,6 +121,7 @@ public OnMapStart()
 
     //Initialize a nextmap
     UpdateNextMap();
+
 }
 
 public OnAutoConfigsBuffered()
