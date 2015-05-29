@@ -15,7 +15,7 @@
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 #define PLUGIN_NAME "Dynamic Map Rotations: Rock The Vote"
 
 public Plugin:myinfo =
