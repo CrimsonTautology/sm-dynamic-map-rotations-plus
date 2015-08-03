@@ -1,45 +1,230 @@
 "rotation"
 {
-    "start"    "10"
-    "10"
+    "start"    "idle_seed"
+
+//  //An example dmr node with all the commands; never call this one
+//  "example"
+//  {
+//      //Map is for a specific map
+//      "map"              "ctf_2fort"
+//      //Group will select a random map from the given group; defined in dmr_groups.txt
+//      "group"            "stock"
+//
+//      //A server command that will be called at map start when on this node
+//      "command"           "exec config"
+//
+//      //The default next node
+//      "default_nextnode"  "example"
+//
+//      //Defines an alternative node branch to go to if the following conditions are met
+//      //You can have as many branches as you want, and they will be checked in order such that the last one that has all the conditions that are met will be selected
+//      "other_node"
+//      {
+//          //If the number of players on the server are greater than or less than respectively
+//          "players_gte"   "12"
+//          "players_lte"   "18"
+//
+//          //If the number of admins on the server are greater than or less than respectively
+//          "admins_gte"    "1"
+//          "admins_lte"    "5"
+//
+//          //Compares the time, uses 24 hour military time
+//          "time_gte"      "5:30"  //after 5:30 AM
+//          "time_lte"      "17:45" //before 5:45 PM
+//
+//          //Checks if the current day is within the specified days, uses "mtwrfsu" where r is Thursday and u is Sunday
+//          "day_eq"        "mtwrf" //Weekdays
+//          "day_neq"       "u"     //Not on Sunday
+//      }
+//  }
+
+    //This is the idle map rotation where we try to get players with dm friendly maps
+    "idle_seed"
     {
-        "map"            "cp_gravelpit"
-        "default_nextnode"    "20"
-        "30"
+        "group"            "idle"
+        "default_nextnode"    "idle_seed"
+        "warmup_seed"
         {
-            "players_lte"    "12"
+            "players_gte"    "8"
+        }
+        "stock1"
+        {
+            "players_gte"   "18"
         }
 
-    }
-    "20"
-    {
-        "map"            "ctf_well"
-        "default_nextnode"    "30"
-        "bdlnds"
+        //Terrible Maps Tuesday
+        "terrible1"
         {
-            "players_lte"    "10"
-            "time_lte"    "11:00"
-        }
-        "10"
-        {
-            "players_lte"    "10"
+            "players_gte"    "8"
+            "day_eq"         "t"
+            "time_gte"       "12:00"
         }
     }
-    "30"
+
+    //Second stage of seeding where we go to a larger stock map
+    "warmup_seed"
     {
-        "map"            "cp_dustbowl"
-        "default_nextnode"    "test"
+        "group"            "warmup"
+        "default_nextnode" "warmup_seed"
+        "idle_seed"
+        {
+            "players_lte"    "4"
+        }
+        "stock1"
+        {
+            "players_gte"    "16"
+        }
+        "custom2"
+        {
+            "players_gte"    "16"
+            "time_gte"       "20:30"
+        }
+        "custom2"
+        {
+            "players_gte"    "16"
+            "day_eq"         "fs"
+        }
     }
 
-    "test"
+    "stock1"
     {
-        "group"          "low_population"
-        "default_nextnode"   "10"
+        "group"               "stock"
+        "default_nextnode"    "stock2"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+        "custom2"
+        {
+            "players_gte"   "12"
+        }
+        "filler2"
+        {
+            "players_gte"   "18"
+        }
     }
 
-    "bdlnds"
+    "stock2"
     {
-        "map"            "cp_badlands"
-        "default_nextnode"    "30"
+        "group"               "stock"
+        "default_nextnode"    "stock3"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+        "filler3"
+        {
+            "players_gte"   "16"
+        }
+        "custom3"
+        {
+            "players_gte"   "20"
+        }
+    }
+
+    "stock3"
+    {
+        "group"               "stock"
+        "default_nextnode"    "stock1"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+        "suprisechip"
+        {
+            "players_gte"   "12"
+        }
+    }
+
+    "custom2"
+    {
+        "group"               "custom"
+        "default_nextnode"    "stock2"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+        "filler3"
+        {
+            "players_gte"   "18"
+        }
+    }
+
+    "custom3"
+    {
+        "group"               "custom"
+        "default_nextnode"    "stock3"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+        "suprisechip"
+        {
+            "players_gte"   "16"
+        }
+    }
+
+    "filler2"
+    {
+        "group"               "filler"
+        "default_nextnode"    "stock2"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+        "custom3"
+        {
+            "players_gte"   "18"
+        }
+    }
+
+    "filler3"
+    {
+        "group"               "filler"
+        "default_nextnode"    "stock3"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+    }
+
+    "suprisechip"
+    {
+        "group"                "suprisechip"
+        "default_nextnode"     "stock1"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+    }
+
+    "terrible1"
+    {
+        "group"                "terrible"
+        "default_nextnode"     "terrible2"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+    }
+
+    "terrible2"
+    {
+        "group"                "terrible"
+        "default_nextnode"     "terrible3"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
+    }
+
+    "terrible3"
+    {
+        "group"                "terrible"
+        "default_nextnode"     "stock1"
+        "idle_seed"
+        {
+            "players_lte"   "2"
+        }
     }
 }

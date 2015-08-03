@@ -1,29 +1,357 @@
-"map_groups"
+map_groups
 {
-    "low_population"
+    //Maps that rotate when the server is empty/near-empty
+    idle
     {
-        "koth_viaduct" {}
-        "plr_hightower" {}
-        "ctf_2fort" {}
+        ctf_doublecross{}
+        ctf_sawmill{}
+        ctf_turbine{}
+
+        koth_harvest_final{}
+        koth_lakeside_final{}
+        koth_nucleus{}
+        koth_sawmill{}
     }
 
-    "high_population"
+    //Maps to play after idleing when at a mid-population size to help build the server
+    warmup
     {
-        "pl_badwater" {}
-        "cp_dustbowl" {}
-        "pl_upward" {}
+        cp_dustbowl{}
+        cp_egypt_final{}
+        cp_gorge{}
+        cp_steel{}
+
+        pl_badwater{}
+        pl_barnblitz{}
+        pl_badwater{}
+        pl_barnblitz{}
+        pl_frontier_final{}
+        pl_goldrush{}
+        pl_thundermountain{}
+        pl_upward{}
+
+        ctf_doublecross{}
+
+        cp_badlands{}
+        cp_fastlane{}
     }
 
-    "suprise_chip"
+    //All (quickplay)stock maps
+    stock
     {
-        "the_race" {}
+        cp_dustbowl{}
+        cp_egypt_final{}
+        cp_gorge{}
+        cp_gravelpit{}
+        cp_junction_final{}
+        cp_mountainlab{}
+        cp_steel{}
+        cp_5gorge{}
+        cp_badlands{}
+        cp_coldfront{}
+        cp_fastlane{}
+        cp_freight_final1{}
+        cp_granary{}
+        cp_well{}
+        cp_yukon_final{}
+        cp_foundry{}
+        cp_gullywash_final1{}
+        cp_process_final{}
+        cp_standin_final{}
+        cp_snakewater_final1{}
+        pl_badwater{}
+        pl_barnblitz{}
+        pl_frontier_final{}
+        pl_goldrush{}
+        pl_hoodoo_final{}
+        pl_thundermountain{}
+        pl_upward{}
+        ctf_2fort{}
+        ctf_doublecross{}
+        ctf_sawmill{}
+        ctf_turbine{}
+        ctf_well{}
+        koth_badlands{}
+        koth_harvest_final{}
+        koth_lakeside_final{}
+        koth_nucleus{}
+        koth_sawmill{}
+        koth_viaduct{}
+        koth_king{}
     }
 
-    "test"
+    //The A-List custom maps;  Mostly the "pro" or popular custom maps you wish to play more often
+    custom
     {
-        "cp_badlands" {}
-        "cp_gravelpit" {}
-        "cp_gorge" {}
+        cp_broma{}
+        cp_busytown {}
+        cp_castle4 {}
+        cp_corporation_b3{}
+        cp_edifice_rc1{}
+        cp_furnace_rc{}
+        cp_glacier_rc7{}
+        cp_observatory4{}
+        cp_silvertrail_rc2{}
+        cp_stoneyridge_rc1{}
+        cp_axle_rc1 {}
+        cp_bazillion_rc5 {}
+        cp_biodome_b1{}
+        cp_collis_b1 {}
+        cp_croissant_final{}
+        cp_desertfortress {}
+        cp_follower{}
+        cp_glassworks_rc4a {}
+        cp_harbour_b1a {}
+        cp_indulge{}
+        cp_obscure_final{}
+        cp_pathfinder_a2 {}
+        cp_prolane_v4{}
+        cp_stag{}
+        cp_sunshine_rc7 {}
+        cp_warmfront{}
+        pl_5curve {}
+        pl_beerbowl_b6c{}
+        pl_borneo_rc3{}
+        pl_boundary_final1{}
+        pl_cashworks_final1{}
+        pl_goldrock_rc1 {}
+        pl_outback_rc4{}
+        pl_repository_rc3{}
+        pl_swiftwater_final_rc{}
+        ctf_geothermal_b2 {}
+        ctf_hoops_beta{}
+        ctf_mach4{}
+        ctf_royal_b3 {}
+        ctf_turbine_pro_rc2{}
+        koth_arctic_b3 {}
+        koth_flake_a11 {}
+        koth_garbage_day_final{}
+        koth_junks_a4 {}
+        koth_lighthouse_rc3{}
+        koth_mill_rc3 {}
+        koth_oilfield{}
+        koth_railbridge_rc2 {}
+        koth_suijin_b3{}
+        koth_viaduct_pro5{}
+        koth_watermill_final{}
+        koth_wubwubwub_remix{}
+    }
+
+    //The B-List custom maps;  mostly filler maps which you like to play once in awhile
+    filler
+    {
+        artpass_mangy{}
+        cp_aqua {}
+        cp_bladend64_72{}
+        cp_delve_b2a{}
+        cp_desperados_b2 {}
+        cp_drag_b15b{}
+        cp_erector_b1 {}
+        cp_gravelpit_grass{}
+        cp_jailbreak_b3 {}
+        cp_kombu_a13 {}
+        cp_lushbowl_final{}
+        cp_lwobtsud {}
+        cp_no_mercy_b1{}
+        cp_redfort_b6{}
+        cp_tiplevarg {}
+        cp_wetland_a6 {}
+        cp_antiquity_rc1{}
+        cp_blackmesa_final{}
+        cp_crossroads_b5{}
+        cp_generator_final{}
+        cp_gothic_event {}
+        cp_horus_b3 {}
+        cp_sacred_pa02 {}
+        cp_science2{}
+        cp_spillway_a11a{}
+        cp_stark_b2{}
+        cp_wildlife_a2 {}
+        pl_borax_rc2{}
+        pl_cranetop_b6 {}
+        pl_deadwood{}
+        pl_deplane_b6{}
+        pl_downhill_b1{}
+        pl_everest_v3_b4  {}
+        pl_goldnight_a5{}
+        pl_jungle_a1b {}
+        pl_metropolis_b5{}
+        pl_pier_b17e{}
+        pl_promotion_b5{}
+        pl_quagmire {}
+        pl_volcanic_a25{}
+        ctf_atrophy_b4{}
+        ctf_chaos {}
+        ctf_hallofdeath{}
+        ctf_halloflife_a1{}
+        ctf_launchzone{}
+        ctf_powerhouse_final {}
+        ctf_system_rc1{}
+        koth_airfield_b7{}
+        koth_aquaticruin_final2{}
+        koth_canada_rc1{}
+        koth_coalplant_b7 {}
+        koth_giza_a11a {}
+        koth_kakariko_v1{}
+        koth_loader_v2 {}
+        koth_moonballs_a3{}
+        koth_nubia_b1 {}
+        koth_peaks_b6a{}
+        koth_sandstone{}
+        koth_sandvich_b1{}
+        koth_stark_b1{}
+        ccp_circlejerk_rc1 {}
+        plr_dogbread_b3{}
+        plr_panic_b2{}
+        tc_hydro_v2{}
+        tc_meridian_rc3{}
+        avanti_b1 {}
+        ctf_deliverance_b3 {}
+        ctf_haarp{}
+        ctf_snowdrift_b4a{}
+    }
+
+    //Terrible Maps Tuesday
+    terrible
+    {
+        the_race{}
+        2f2f_directional_dinosaurs_a1{}
+        2f2f_raptor_ridge_a1{}
+        2f2f_sandsharks_a1{}
+        arena_biebertower{}
+        koth_throbbing_rc1{}
+        vman_road_less_travelled{}
+    }
+
+    //Wonderful Maps Wednesday
+    //New maps that which we want to play more often than other maps
+    wonderful
+    {
+        pl_goldrock_rc1 {}
+        pl_goldnight_a5{}
+        cp_kombu_a13 {}
+    }
+
+    //Mostly gimmicky maps that you only play for a short period
+    suprisechip
+    {
+        1up_granary{}
+        2f2f_directional_dinosaurs_a1{}
+        2f2f_raptor_ridge_a1{}
+        2f2f_sandsharks_a1{}
+        arena_biebertower{}
+        billiards{}
+        cp_bestinclass_v2{}
+        cp_soar{}
+        ctf_pro_bball{}
+        cyberpunk{}
+        dom_canalzone{}
+        falling_cp{}
+        king_of_the_train_final{}
+        koth_lolcano_b3{}
+        koth_moonballs_a3{}
+        koth_nippletwister_af{}
+        koth_pacman_wtf_b2{}
+        koth_throbbing_rc1{}
+        koth_trainsawlaser_rc2{}
+        koth_windmilltrainsaw_b3a{}
+        koth_megaman6_b5{}
+        pipeball_classic{}
+        pl_badwater_rainy2{}
+        pl_bedwetter{}
+        pl_cliffhanger_b1{}
+        pl_donkeykong_final{}
+        pl_happycow_z4{}
+        pl_rainbowride_b3d{}
+        pl_retawdab {}
+        skeeball_b01{}
+        vman_road_less_travelled{}
+        wacky_races_v2{}
+        whoaaaaaa{}
+
+        sn_impressionist_b1{}
+        sniperwell_tf2_final{}
+        sn_castlecanalsv2{}
+        4fortsniper_tf{}
+        sn_2fort_kelly_tribute{}
+
+        arena_lumberyard{}
+        arena_ravine{}
+        arena_badlands{}
+        arena_granary{}
+        arena_well{}
+        arena_watchtower{}
+        arena_sawmill{}
+        arena_nucleus{}
+        arena_offblast_final{}
+        arena_hydrothunder_final{}
+        arena_hydro_a2{}
+        arena_oasis_final{}
+        arena_saw{}
+        arena_bombastic{}
+        arena_breakwall_b1 {}
+    }
+
+    //Arena maps;  we don't differentiate between custom and stock
+    arena
+    {
+        arena_lumberyard{}
+        arena_ravine{}
+        arena_badlands{}
+        arena_granary{}
+        arena_well{}
+        arena_watchtower{}
+        arena_sawmill{}
+        arena_nucleus{}
+        arena_offblast_final{}
+        arena_hydrothunder_final{}
+        arena_hydro_a2{}
+        arena_oasis_final{}
+        arena_saw{}
+        arena_bombastic{}
+        arena_breakwall_b1 {}
+    }
+
+    //Valve maps which are not quickplay or that we don't wish to play often
+    alt_stock
+    {
+        plr_hightower{}
+        plr_pipeline{}
+        plr_nightfall_final{}
+        tc_hydro{}
+        sd_doomsday{}
+        rd_asteroid{}
+    }
+
+    //Prop Hunt maps
+    prop_hunt
+    {
+        ph_warehouse_b1{}
+        ph_lumberyard_a2{}
+        ph_oasis_a1{}
+        ph_farm_a5{}
+        ph_watchtower_a1{}
+        ph_harvest_event_a1{}
+    }
+
+    //Dodge Ball maps
+    dodge_ball
+    {
+    }
+
+    //Sniper Maps
+    sniper
+    {
+        sn_impressionist_b1{}
+        sniperwell_tf2_final{}
+        sn_castlecanalsv2{}
+        4fortsniper_tf{}
+        sn_2fort_kelly_tribute{}
+    }
+
+    //Jetpack maps
+    jetpack
+    {
     }
 
 }
