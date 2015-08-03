@@ -130,14 +130,14 @@ Another example. Let's add cp_badlands to the rotation and throw in a few more c
     {
         "map"            "ctf_well"
         "default_nextnode"    "30"
+        "10"
+        {
+            "players_lte"    "10"
+        }
         "bdlnds"
         {
             "players_lte"    "10"
             "time_lte"    "11:00"
-        }
-        "10"
-        {
-            "players_lte"    "10"
         }
     }
     "30"
@@ -156,7 +156,7 @@ Another example. Let's add cp_badlands to the rotation and throw in a few more c
 
 First, notice how I used the section name `bdlnds`. Remember that section names are arbitrary -- I could have just been consistent and chosen "40" or chosen anything at all.
 
-Let's look closely at section 20 (ctf_well). There are two conditional nextnodes and a default_nextnode. The first condition reads "IF the number of players <= 10 AND the current server time is <= 11AM, THEN the next map is section bdlnds (cp_badlands)". The second condition reads "IF the number of players <= 10 THEN the next map is section 10 (cp_gravelpit). If none of the conditional nextmaps are true, then the nextmap is the default_nextmap: section 30 (cp_dustbowl).  You can have as many subsections as you wish and the DMR will iterate through all of them, selecting the last subsection whose conditions are true and defaulting to `default_nextnode` if none of them are true.
+Let's look closely at section 20 (ctf_well). There are two conditional nextnodes and a default_nextnode. The first condition reads "IF the number of players <= 10 THEN the next map is section 10 (cp_gravelpit).  The second condition reads "IF the number of players <= 10 AND the current server time is <= 11AM, THEN the next map is section bdlnds (cp_badlands)".  If none of the conditional nextmaps are true, then the nextmap is the default_nextmap: section 30 (cp_dustbowl).  You can have as many subsections as you wish and the DMR will iterate through all of them, selecting the last subsection whose conditions are true and defaulting to `default_nextnode` if none of them are true.
 
 A new feature in this version of DMR is the concept of map groups.  Instead of specifying a specific map for each node you can instead specify your own defined mapgroup.  Take a look at this `dmr_mapgroups.txt`:
 
