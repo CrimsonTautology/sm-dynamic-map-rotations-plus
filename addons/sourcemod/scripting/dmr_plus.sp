@@ -26,7 +26,7 @@ public Plugin:myinfo =
     url = "https://github.com/CrimsonTautology/sm_dynamic_map_rotations_plus"
 };
 
-#define MAX_KEY_LENGTH	    32
+#define MAX_KEY_LENGTH	    128
 
 new DAYS_OF_WEEK[]= {'\0', 'm', 't', 'w', 'r', 'f', 's', 'u'};
 
