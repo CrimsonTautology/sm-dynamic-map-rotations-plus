@@ -13,6 +13,10 @@
 //      //A server command that will be called at map start when on this node
 //      "command"           "exec config"
 //
+//      //A title to display next to the map name when calling !nextmaps
+//      //Good for when you are executing a custom game mode that is different from normal
+//      "title"             "Low Gravity"
+//
 //      //The default next node
 //      "default_nextnode"  "example"
 //

@@ -544,6 +544,22 @@ stock bool:GetGroupFromKey(const String:node_key[], Handle:rotation, String:grou
     return found;
 }
 
+stock bool:GetTitleFromKey(const String:node_key[], Handle:rotation, String:title[], length)
+{
+    if(rotation == INVALID_HANDLE) return false;
+
+    new bool:found = false;
+
+    KvRewind(rotation);
+    if(KvJumpToKey(rotation, node_key))
+    {
+        found = KvExists2(rotation, "title", title, length);
+    }
+
+    KvRewind(rotation);
+    return found;
+}
+
 stock bool:GetNextNodeKey(const String:node_key[], Handle:rotation, String:next_node_key[], length)
 {
     if(rotation == INVALID_HANDLE) return false;
@@ -655,6 +671,7 @@ stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
     new Handle:visited_groups = CreateTrie();
     new junk;
     decl String:current_key[MAX_KEY_LENGTH], String:next_key[MAX_KEY_LENGTH], String:map[MAX_KEY_LENGTH];
+    decl String:title[MAX_KEY_LENGTH], bool:has_title, String:current_key_copy[MAX_KEY_LENGTH];
 
     //Start with node_key
     strcopy(current_key, sizeof(current_key), node_key);
@@ -663,6 +680,8 @@ stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
     for(new i = 0; i < ammount; i++)
     {
         GetNextNodeKey(current_key, g_Rotation, next_key, sizeof(next_key));
+
+        has_title = GetTitleFromKey(next_key, g_Rotation, title, sizeof(title));
 
         //NOTE:  This is to handle the case where multiple of the same map group
         //appear in a row.  We cache the randomized result so it is impossible 
@@ -680,9 +699,17 @@ stock Handle:GetNextMaps(const String:node_key[], ammount, bool:keys=false)
             GetMapFromKey(next_key, g_Rotation, g_MapGroups, map, sizeof(map));
         }
         strcopy(current_key, sizeof(current_key), next_key);
+        strcopy(current_key_copy, sizeof(current_key_copy), next_key); //Copy incase we need to add a title
+
+        //Add the title to the map name if one exists
+        if(has_title)
+        {
+            Format(map, sizeof(map), "%s (%s)", map, title);
+            Format(current_key_copy, sizeof(current_key_copy), "%s (%s)", current_key_copy, title);
+        }
 
         //Push the current_key if we're only returning keys; else push the map name
-        PushArrayString(maps, keys ? current_key : map);
+        PushArrayString(maps, keys ? current_key_copy : map);
     }
 
     CloseHandle(visited_groups);
