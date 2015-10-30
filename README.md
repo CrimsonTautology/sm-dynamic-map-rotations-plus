@@ -7,10 +7,12 @@ Dynamically changes the map rotations based on current server conditions.  This 
 
 ##Installation
 * Compile plugins with spcomp (e.g.)
-> spcomp addons/sourcemod/scripting/dmr_plus.sp
-> spcomp addons/sourcemod/scripting/dmr_rockthevote.sp
-* Move compiled .smx files into your `"<modname>/addons/sourcemod/plugins"` directory.
-* Move dmr.txt and dmr_groups.txt to your base "<modname>" directory or a custom "<modname>/custom/<customname>/" directory.
+```
+spcomp addons/sourcemod/scripting/dmr_plus.sp
+spcomp addons/sourcemod/scripting/dmr_rockthevote.sp
+```
+* Move compiled .smx files into your `<modname>/addons/sourcemod/plugins` directory.
+* Move dmr.txt and dmr_groups.txt to your base `<modname>` directory or a custom `<modname>/custom/<customname>/` directory.
 
     
 
