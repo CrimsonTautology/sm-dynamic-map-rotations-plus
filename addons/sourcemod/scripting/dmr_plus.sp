@@ -14,7 +14,7 @@
 
 #include <sourcemod>
 
-#define PLUGIN_VERSION "1.0.3"
+#define PLUGIN_VERSION "1.0.4"
 #define PLUGIN_NAME "Dynamic Map Rotations Plus"
 
 public Plugin:myinfo =
