@@ -212,6 +212,14 @@ with this corresponding `dmr.txt`
 
 This is similar to just selecting a specific map except this time a random map from a map group is chosen instead.  This DMR for example with rotatate between a radnom payload map, a random cp map, a random koth map and then back to a random pl map.  This is great if you have a huge map selection on your server but want to break off certain maps to only be played if enough people are on the server.
 
+# Node Options
+* `map` - A specific map this node will run.
+* `group` - A random map from a given map group defined in `dmr_groups.txt`.
+* `command` - A server command that will be called at map start when on this node
+* `pre_command` - Like command but called during OnMapStart instead of OnAutoConfigsBuffered.  Used for some commands that need to be called sooner.
+* `title` - A title to display next to the map name when calling !nextmaps.  Good for when you are executing a custom game mode that is different from normal.
+* `default_nextnode` - The default node that will be called next if none of the custom conditions are met.
+
 # Custom Conditions
 * `players_lte` - the number of players on the server is less than or equal to the specified number
 * `players_gte` - ditto, but greater than or equal to
@@ -221,3 +229,5 @@ This is similar to just selecting a specific map except this time a random map f
 * `time_gte` - ditto, but greater than or equal to
 * `day_eq` - the day is currently a certain day of the week, where the day is specified with m, t, w, r, f, s, and u for Monday, Tuesday, etc. You can specify multiple days. For example, "day_eq" "mwf" will be true if the day is Monday, Wednesday, or Friday. "day_eq" "u" will be true if the day is Sunday.
 * `day_neq` - ditto, but if the day is NOT a certain day of the week
+
+
