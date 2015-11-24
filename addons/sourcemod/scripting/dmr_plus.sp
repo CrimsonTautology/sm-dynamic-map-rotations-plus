@@ -122,6 +122,9 @@ public OnMapStart()
     //Initialize a nextmap
     UpdateNextMap();
 
+    //Run Pre-Commands
+    RunNodePreCommands(node_key, g_Rotation);
+
 }
 
 public OnAutoConfigsBuffered()
@@ -203,6 +206,24 @@ UpdateMapHistory(Handle:history, limit)
     {
         RemoveFromArray(history, 0);
     }	
+}
+
+//Commands that are run as soon as possible
+RunNodePreCommands(const String:node_key[], Handle:rotation)
+{
+    decl String:command[MAX_KEY_LENGTH];
+
+    KvRewind(rotation);
+    if(KvJumpToKey(rotation, node_key))
+    {
+        if(KvExists2(rotation, "pre_command", command, sizeof(command)))
+        {
+            ServerCommand(command);
+        }
+    }
+
+    KvRewind(rotation);
+
 }
 
 RunNodeCommands(const String:node_key[], Handle:rotation)
