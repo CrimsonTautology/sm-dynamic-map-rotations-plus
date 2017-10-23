@@ -48,25 +48,25 @@ public OnPluginStart()
 {
     LoadTranslations("common.phrases");
 
-    CreateConVar("dmr_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
+    CreateConVar("dmr_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
 
     g_Cvar_File = CreateConVar(
             "dmr_file",
             "dmr.txt",
             "Location of the rotation keyvalues file",
-            FCVAR_PLUGIN);
+            0);
 
     g_Cvar_GroupsFile = CreateConVar(
             "dmr_groups_file",
             "dmr_groups.txt",
             "Location of the map groups keyvalues file",
-            FCVAR_PLUGIN);
+            0);
 
     g_Cvar_NodeKey = CreateConVar(
             "dmr_node_key",
             "",
             "The key used to base nextmap decisions on",
-            FCVAR_PLUGIN);
+            0);
 
     g_Cvar_ExcludeMaps = CreateConVar(
             "dmr_exclude",
