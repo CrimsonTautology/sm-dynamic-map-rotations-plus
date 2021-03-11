@@ -1,0 +1,214 @@
+rotation
+{
+    start    idle_seed
+
+//  // An example dmr node with all the commands; never call this one
+//  example
+//  {
+//      // Map is for a specific map
+//      map               ctf_2fort
+//      // Group will select a random map from the given group; defined in
+//      // dmr_groups.txt
+//      group             stock
+//
+//      // A server command that will be called at map start when on this node
+//      command           "exec config"
+//
+//      // Like command but called during OnMapStart instead of
+//      // OnAutoConfigsBuffered
+//      // Used for some commands that need to be called sooner
+//      pre_command       "exec config"
+//
+//      // A title to display next to the map name when calling !nextmaps
+//      // Good for when you are executing a custom game mode that is different
+//      // from normal
+//      title             "Low Gravity"
+//
+//      // The default next node
+//      default_nextnode  example
+//
+//      // Defines an alternative node branch to go to if the following
+//      // conditions are met
+//      // You can have as many branches as you want, and they will be checked
+//      // in order such that the last one that has all the conditions that are
+//      // met will be selected
+//      other_node
+//      {
+//          // If the number of players on the server are greater than or less
+//          // than respectively
+//          players_gte   12
+//          players_lte   18
+//
+//          // If the number of admins on the server are greater than or less
+//          // than respectively
+//          admins_gte    1
+//          admins_lte    5
+//
+//          // Compares the time, uses 24 hour military time
+//          time_gte      "5:30"  // after 5:30 AM
+//          time_lte      "17:45" // before 5:45 PM
+//
+//          // Checks if the current day is within the specified days, uses
+//          // "mtwrfsu" where r is Thursday and u is Sunday
+//          day_eq        mtwrf // weekdays
+//          day_neq       u     // Not on Sunday
+//      }
+//  }
+
+    // This is the idle map rotation where we try to get players with dm
+    // friendly maps
+    idle_seed
+    {
+        group              idle
+        default_nextnode idle_seed
+        warmup_seed
+        {
+            players_gte   8
+        }
+        stock1
+        {
+            players_gte   18
+        }
+
+        // Terrible Maps Tuesday
+        terrible1
+        {
+            players_gte    8
+            day_eq         t
+            time_gte       "12:00"
+        }
+    }
+
+    // Second stage of seeding where we go to a larger stock map
+    warmup_seed
+    {
+        group              warmup
+        default_nextnode   warmup_seed
+        idle_seed
+        {
+            players_lte    4
+        }
+        stock1
+        {
+            players_gte    16
+        }
+        custom2
+        {
+            players_gte    16
+            time_gte       "20:30"
+        }
+        custom2
+        {
+            players_gte    16
+            day_eq         fs
+        }
+    }
+
+    stock1
+    {
+        group               stock
+        default_nextnode    stock2
+        idle_seed
+        {
+            players_lte   2
+        }
+        custom2
+        {
+            players_gte   12
+        }
+        filler2
+        {
+            players_gte   18
+        }
+    }
+
+    stock2
+    {
+        group               stock
+        default_nextnode    stock3
+        idle_seed
+        {
+            players_lte   2
+        }
+        filler3
+        {
+            players_gte   16
+        }
+        custom3
+        {
+            players_gte   20
+        }
+    }
+
+    stock3
+    {
+        group               stock
+        default_nextnode    stock1
+        idle_seed
+        {
+            players_lte   2
+        }
+        suprisechip
+        {
+            players_gte   12
+        }
+    }
+
+    custom2
+    {
+        group               custom
+        default_nextnode    stock2
+        idle_seed
+        {
+            players_lte   2
+        }
+        filler3
+        {
+            players_gte   18
+        }
+    }
+
+    custom3
+    {
+        group               custom
+        default_nextnode    stock3
+        idle_seed
+        {
+            players_lte   2
+        }
+        suprisechip
+        {
+            players_gte   16
+        }
+    }
+
+    terrible1
+    {
+        group                terrible
+        default_nextnode     terrible2
+        idle_seed
+        {
+            players_lte   2
+        }
+    }
+
+    terrible2
+    {
+        group                terrible
+        default_nextnode     terrible3
+        idle_seed
+        {
+            players_lte   2
+        }
+    }
+
+    terrible3
+    {
+        group                terrible
+        default_nextnode     stock1
+        idle_seed
+        {
+            players_lte   2
+        }
+    }
+}

@@ -1,0 +1,116 @@
+map_groups
+{
+    // maps that rotate when the server is empty/near-empty
+    idle
+    {
+        ctf_doublecross {}
+        ctf_sawmill {}
+        ctf_turbine {}
+
+        koth_harvest_final {}
+        koth_lakeside_final {}
+        koth_nucleus {}
+        koth_sawmill {}
+    }
+
+    // maps to play after idling when at a mid-population size to help build the server
+    warmup
+    {
+        cp_dustbowl {}
+        cp_egypt_final {}
+        cp_gorge {}
+        cp_steel {}
+
+        pl_badwater {}
+        pl_barnblitz {}
+        pl_badwater {}
+        pl_barnblitz {}
+        pl_frontier_final {}
+        pl_goldrush {}
+        pl_thundermountain {}
+        pl_upward {}
+
+        ctf_doublecross {}
+
+        cp_badlands {}
+        cp_fastlane {}
+    }
+
+    // all (quickplay) stock maps
+    stock
+    {
+        cp_dustbowl {}
+        cp_egypt_final {}
+        cp_gorge {}
+        cp_gravelpit {}
+        cp_junction_final {}
+        cp_mountainlab {}
+        cp_steel {}
+        cp_5gorge {}
+        cp_badlands {}
+        cp_coldfront {}
+        cp_fastlane {}
+        cp_freight_final1 {}
+        cp_granary {}
+        cp_well {}
+        cp_yukon_final {}
+        cp_foundry {}
+        cp_gullywash_final1 {}
+        cp_process_final {}
+        cp_standin_final {}
+        cp_snakewater_final1 {}
+        pl_badwater {}
+        pl_barnblitz {}
+        pl_frontier_final {}
+        pl_goldrush {}
+        pl_hoodoo_final {}
+        pl_thundermountain {}
+        pl_upward {}
+        ctf_2fort {}
+        ctf_doublecross {}
+        ctf_sawmill {}
+        ctf_turbine {}
+        ctf_well {}
+        koth_badlands {}
+        koth_harvest_final {}
+        koth_lakeside_final {}
+        koth_nucleus {}
+        koth_sawmill {}
+        koth_viaduct {}
+        koth_king {}
+    }
+
+    // the A-List custom maps;  Mostly the "pro" or popular custom maps you wish to play more often
+    custom
+    {
+        cp_castle4 {}
+        cp_furnace_rc {}
+        cp_bazillion_rc5 {}
+        cp_obscure_final {}
+        cp_stag {}
+        pl_5curve {}
+        pl_boundary_final1 {}
+        pl_outback_rc4 {}
+        pl_repository_rc3 {}
+        ctf_geothermal_b2 {}
+        ctf_mach4 {}
+        ctf_royal_b3 {}
+        ctf_turbine_pro_rc2 {}
+        koth_oilfield {}
+        koth_suijin_b3 {}
+        koth_viaduct_pro5 {}
+        koth_wubwubwub_remix {}
+    }
+
+    // terrible maps tuesday
+    terrible
+    {
+        the_race{}
+        2f2f_directional_dinosaurs_a1{}
+        2f2f_raptor_ridge_a1{}
+        2f2f_sandsharks_a1{}
+        arena_biebertower{}
+        koth_throbbing_rc1{}
+        vman_road_less_travelled{}
+    }
+}
