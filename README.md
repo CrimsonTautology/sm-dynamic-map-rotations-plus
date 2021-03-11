@@ -50,7 +50,7 @@ NOTE: All commands can be run from the in-game chat by replacing `sm_` with `!` 
 ### Console Variables
 
 | Command | Accepts | Description |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | dmr_rotation_file | path | Location of the rotation keyvalues file (default: `cfg/dmr_rotation.txt`)|
 | dmr_groups_file | path | Location of the map groups keyvalues file (default: `cfg/dmr_groups.txt`)|
 | dmr_exclude | integer | Specifies how many past maps to exclude when randomly selecting a map from a group. (default: `5`)|
