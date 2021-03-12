@@ -15,7 +15,7 @@
 
 #include <sourcemod>
 
-#define PLUGIN_VERSION "1.10.0"
+#define PLUGIN_VERSION "1.10.1"
 #define PLUGIN_NAME "Dynamic Map Rotations Plus"
 
 public Plugin myinfo =
@@ -43,7 +43,7 @@ MapGroups g_MapGroups;
 MapHistory g_MapHistory;
 StringMap g_CachedRandomMapTrie;
 
-bool g_ForceNextMap = false;
+bool g_NextMapIsForced = false;
 
 char g_Node[MAX_KEY_LENGTH];
 
@@ -96,19 +96,23 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
-    char currentmap[MAX_KEY_LENGTH];
+    char currentmap[MAX_KEY_LENGTH], currentgroup[MAX_KEY_LENGTH];
 
-    if (!ForcedNextMap())
+    if (!NextMapIsForced())
     {
-        // iterate to the next node in our rotation
-        g_Rotation.Iterate(
-                g_Node, sizeof(g_Node), currentmap, sizeof(currentmap),
-                g_MapGroups, g_CachedRandomMapTrie, g_MapHistory,
-                g_ExcludeMapsCvar.IntValue);
+        // add this map to our history
+        GetCurrentMap(currentmap, sizeof(currentmap));
+        g_MapHistory.PushMap(currentmap, g_ExcludeMapsCvar.IntValue);
+
+        // if current node holds a map group;  clear it from the cache
+        if (g_Rotation.GetGroup(g_Node, currentgroup, sizeof(currentgroup)))
+        {
+            g_CachedRandomMapTrie.Remove(currentgroup);
+        }
     }
 
     // reset globals
-    g_ForceNextMap = false;
+    g_NextMapIsForced = false;
 
     // set up repeating timer
     CreateTimer(60.0, Timer_UpdateNextMap, .flags = TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -118,6 +122,20 @@ public void OnMapStart()
 
     // run pre-Commands
     g_Rotation.RunNodePreCommand(g_Node);
+}
+
+public void OnMapEnd()
+{
+    // needed for Iterate, not actually used
+    char nextmap[MAX_KEY_LENGTH];
+
+    if (!NextMapIsForced())
+    {
+        // iterate to the next node in our rotation
+        g_Rotation.Iterate(
+                g_Node, sizeof(g_Node), nextmap, sizeof(nextmap),
+                g_MapGroups, g_CachedRandomMapTrie, g_MapHistory);
+    }
 }
 
 public void OnAutoConfigsBuffered()
@@ -173,7 +191,7 @@ Action Command_SetNextmap(int client, int args)
 
     ShowActivity(client, "%t", "Cvar changed", "sm_nextmap", map);
 
-    g_ForceNextMap = true;
+    g_NextMapIsForced = true;
     SetNextMap(map);
 
     return Plugin_Handled;
@@ -181,14 +199,14 @@ Action Command_SetNextmap(int client, int args)
 
 Action Command_UnsetNextmap(int client, int args)
 {
-    if (!ForcedNextMap())
+    if (!NextMapIsForced())
     {
         ReplyToCommand(client, "[DMR] There was no forced nextmap to unset");
 
     }
     else
     {
-        g_ForceNextMap = false;
+        g_NextMapIsForced = false;
         UpdateNextMap();
         ReplyToCommand(client, "[DMR] Forced nextmap unset");
     }
@@ -237,7 +255,7 @@ Action Command_ValidateDMR(int client, int args)
 Action Timer_UpdateNextMap(Handle timer)
 {
     // skip this we have forced the next map
-    if (ForcedNextMap()) return Plugin_Continue;
+    if (NextMapIsForced()) return Plugin_Continue;
 
     UpdateNextMap();
 
@@ -332,18 +350,22 @@ void ValidateDMR()
 
 void UpdateNextMap()
 {
-    char nextmap[MAX_KEY_LENGTH], nextnode[MAX_KEY_LENGTH];
+    char nextnode[MAX_KEY_LENGTH], nextmap[MAX_KEY_LENGTH];
+    strcopy(nextnode, sizeof(nextnode), g_Node);
 
-    g_Rotation.GetNextNode(g_Node, nextnode, sizeof(nextnode));
-    g_Rotation.GetMap(nextnode, nextmap, sizeof(nextmap), g_MapGroups,
-            g_CachedRandomMapTrie, g_MapHistory);
-
-    SetNextMap(nextmap);
+    // iterate to the next node in our rotation with current server conditions
+    // and update the nextmap
+    if(g_Rotation.Iterate(
+            nextnode, sizeof(nextnode), nextmap, sizeof(nextmap), g_MapGroups,
+            g_CachedRandomMapTrie, g_MapHistory))
+    {
+        SetNextMap(nextmap);
+    }
 }
 
-bool ForcedNextMap()
+bool NextMapIsForced()
 {
-    return g_ForceNextMap;
+    return g_NextMapIsForced;
 }
 
 void PrintNextItems(int amount=7, bool as_nodes=false, bool show_title=true)
@@ -357,7 +379,7 @@ void PrintNextItems(int amount=7, bool as_nodes=false, bool show_title=true)
     Format(nextmaps, sizeof(nextmaps), as_nodes ? "Next Nodes:" : "Next Maps:");
 
     // prepend nexmap if we set a forced nextmap
-    if (ForcedNextMap())
+    if (NextMapIsForced())
     {
         GetNextMap(map, sizeof(map));
         Format(nextmaps, sizeof(nextmaps), "%s %s", nextmaps, map);
@@ -366,7 +388,7 @@ void PrintNextItems(int amount=7, bool as_nodes=false, bool show_title=true)
     for (int i = 0; i < maps.Length; i++)
     {
         maps.GetString(i, map, sizeof(map));
-        if (i > 0 || ForcedNextMap())
+        if (i > 0 || NextMapIsForced())
         {
             Format(nextmaps, sizeof(nextmaps), "%s, %s", nextmaps, map);
         }

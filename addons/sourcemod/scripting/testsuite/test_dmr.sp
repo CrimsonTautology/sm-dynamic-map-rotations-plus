@@ -85,17 +85,17 @@ void test_dmr_rotation()
     Test_AssertStringsEqual("GetStartNode is node_a", "node_a", node)
 
     // expect that we can iterate on default_node
-    rotation.GetNextNode("node_a", node, sizeof(node));
-    Test_AssertStringsEqual("GetNextNode node_a -> node_b",  "node_b", node);
+    rotation.DetermineNextNode("node_a", node, sizeof(node));
+    Test_AssertStringsEqual("DetermineNextNode node_a -> node_b",  "node_b", node);
 
-    rotation.GetNextNode("node_b", node, sizeof(node));
-    Test_AssertStringsEqual("GetNextNode node_b -> node_c", "node_c", node);
+    rotation.DetermineNextNode("node_b", node, sizeof(node));
+    Test_AssertStringsEqual("DetermineNextNode node_b -> node_c", "node_c", node);
 
-    rotation.GetNextNode("node_c", node, sizeof(node));
-    Test_AssertStringsEqual("GetNextNode node_c -> node_a", "node_a", node);
+    rotation.DetermineNextNode("node_c", node, sizeof(node));
+    Test_AssertStringsEqual("DetermineNextNode node_c -> node_a", "node_a", node);
 
-    rotation.GetNextNode("node_d", node, sizeof(node));
-    Test_AssertStringsEqual("GetNextNode node_d -> node_d", "node_d", node);
+    rotation.DetermineNextNode("node_d", node, sizeof(node));
+    Test_AssertStringsEqual("DetermineNextNode node_d -> node_d", "node_d", node);
 
     // expect that we can retrieve values of specific keys of a given node
     exists = rotation.GetValueOfKeyOfNode("node_a", "test_key", val, sizeof(val));
@@ -125,6 +125,12 @@ void test_dmr_rotation()
     // expect that we can get the map of a node (without a map groups structure)
     rotation.GetMap("node_a", val, sizeof(val));
     Test_AssertStringsEqual("GetMap cp_map_a1", "cp_map_a1", val);
+    rotation.DetermineMap("node_a", val, sizeof(val));
+    Test_AssertStringsEqual("DetermineMap cp_map_a1", "cp_map_a1", val);
+
+    // expect that we can get the group of a node (without a map groups structure)
+    rotation.GetGroup("node_c", val, sizeof(val));
+    Test_AssertStringsEqual("GetGroup single", "single", val);
 
     delete rotation;
 }
@@ -183,26 +189,21 @@ void test_dmr_integration() {
     // iterate over the rotation
     rotation.GetStartNode(node, sizeof(node));
 
-    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups, cache, history, 10)
+    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups, cache, history)
     Test_AssertStringsEqual("iterate rotation on node node_b", "node_b", node);
     Test_AssertStringsEqual("iterate rotation on map tp_map_b2", "tp_map_b2", map);
 
-    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups, cache, history, 10)
+    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups, cache, history)
     Test_AssertStringsEqual("iterate rotation on node node_c", "node_c", node);
     Test_AssertStringsEqual("iterate rotation on map pl_single", "pl_single", map);
 
-    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups, cache, history, 10)
+    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups, cache, history)
     Test_AssertStringsEqual("iterate rotation on node node_a", "node_a", node);
     Test_AssertStringsEqual("iterate rotation on map cp_map_a1", "cp_map_a1", map);
 
-    // expect history to be updated
-    Test_AssertEqual("iteration updated history 3", history.Length, 3);
-
-    // test a dry run iteration that will not update history
-    rotation.Iterate(node, sizeof(node), map, sizeof(map), groups)
-    Test_AssertStringsEqual("dry iterate rotation on node node_b", "node_b", node);
-    Test_AssertStringsEqual("dry iterate rotation on map tp_map_b2", "tp_map_b2", map);
-    Test_AssertEqual("dry iteration did not update history 3", 3, history.Length);
+    // test the random map cache worked
+    Test_AssertTrue("single was added to the cache", cache.GetString("single", map, sizeof(map)))
+    Test_AssertStringsEqual("pl_single was added under the single group", "pl_single", map);
 
     // test GetNextItems as maps
     items = rotation.GetNextItems("node_a", 10, groups, cache);

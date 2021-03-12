@@ -72,6 +72,20 @@ methodmap Rotation < DMRKeyValues
         return this.GetValueOfKeyOfNode(node, "title", value, length);
     }
 
+    // get the map of the given node if it exists
+    // return false if node does not have a map or if node does not exist
+    public bool GetMap(const char[] node, char[] value, int length)
+    {
+        return this.GetValueOfKeyOfNode(node, "map", value, length);
+    }
+
+    // get the group of the given node if it exists
+    // return false if node does not have a group or if node does not exist
+    public bool GetGroup(const char[] node, char[] value, int length)
+    {
+        return this.GetValueOfKeyOfNode(node, "group", value, length);
+    }
+
     // execute the value of a given command_key as if it were a server command
     // return false if node does not have the given command_key or if node does
     // not exist
@@ -103,7 +117,7 @@ methodmap Rotation < DMRKeyValues
 
     // given a node, determine the nextnode in the rotation we should jump to
     // return false if the current node does not have a nextnode
-    public bool GetNextNode(const char[] node, char[] nextnode, int length)
+    public bool DetermineNextNode(const char[] node, char[] nextnode, int length)
     {
         // save a copy of node in case we overwrite it
         char currentnode[MAX_KEY_LENGTH];
@@ -142,11 +156,11 @@ methodmap Rotation < DMRKeyValues
     // be an actual map in the "map" key or it may be a random map from a map
     // group specified by the "group" key
     // return false if a map cannot be determined
-    public bool GetMap(const char[] node, char[] map, int length, MapGroups groups=null,
+    public bool DetermineMap(const char[] node, char[] map, int length, MapGroups groups=null,
             StringMap cache=null, MapHistory history=null)
     {
         // simply return the map value if it exists
-        if (this.GetValueOfKeyOfNode(node, "map", map, length))
+        if (this.GetMap(node, map, length))
         {
             return true;
         }
@@ -169,22 +183,10 @@ methodmap Rotation < DMRKeyValues
     // updates the node and map fields to the nextnode and nextmap
     // return false if we are unable to iterate
     public bool Iterate(char[] node, int nlength, char[] map, int mlength, MapGroups groups=null,
-            StringMap cache=null, MapHistory history=null, int history_limit=-1)
+            StringMap cache=null, MapHistory history=null)
     {
-        char group[MAX_KEY_LENGTH];
-
-        if (!this.GetNextNode(node, node, nlength)) return false;
-        if (!this.GetMap(node, map, mlength, groups, cache, history)) return false;
-
-        // add this map to our history
-        if (history != null) history.PushMap(map, history_limit);
-
-        // remove current group from cache
-        if (cache != null && groups != null &&
-                this.GetValueOfKeyOfNode(node, "group", group, sizeof(group)))
-        {
-            cache.Remove(group);
-        }
+        if (!this.DetermineNextNode(node, node, nlength)) return false;
+        if (!this.DetermineMap(node, map, mlength, groups, cache, history)) return false;
 
         return true;
     }
@@ -217,8 +219,7 @@ methodmap Rotation < DMRKeyValues
             // impossible to know what the random map will be past the first
             // iteration.  Instead we simply display the map group past the
             // first iteration.
-            has_group = this.GetValueOfKeyOfNode(currentnode, "group", group,
-                    sizeof(group));
+            has_group = this.GetGroup(currentnode, group, sizeof(group));
             if (has_group)
             {
                 if (visited_groups.GetValue(group, junk))
